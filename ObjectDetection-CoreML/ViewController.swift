@@ -8,34 +8,39 @@
 
 import UIKit
 import ARKit
+import Fritz
 import RealityKit
 import SceneKit.ModelIO
 import Vision
 import CoreMedia
 
-class ViewController: UIViewController , ARSCNViewDelegate{
+class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
 
     // MARK: - UI Properties
     @IBOutlet weak var boxesView: DrawingBoundingBoxView!
     @IBOutlet weak var sceneView: ARSCNView!
     
-    let nodeFlag = false
     let objectDectectionModel = YOLOv3()
     let depthDetectionModel = DeepLabV3()
-    let maxPlanesCount = 5
+    var planeColor = UIColor.init(hue: 0.5, saturation: 0.5, brightness: 0.5, alpha: 0.5)
+    private lazy var fritzModel = FritzVisionPeopleSegmentationModelFast()
+    var maxPlanesCount = 5
     var currentPlaneCount = 0
+    let visionQueue = DispatchQueue(label: "com.vision.ARML.visionqueue")
     
     
     // MARK: - Vision Properties
     var request: VNCoreMLRequest?
     var visionModel: VNCoreMLModel?
     var isInferencing = false
+    var currentFrameBuffer: CVPixelBuffer?
     
     // MARK: - AV Property
     var videoCapture: VideoCapture!
-    let semaphore = DispatchSemaphore(value: 1)
-    var lastExecution = Date()
     let planesRootNode = SCNNode()
+    
+    var fritzMaskNode : SCNNode!
+    var fritzMaskMaterial : SCNMaterial!
     
     // MARK: - TableView Data
     var predictions: [VNRecognizedObjectObservation] = []
@@ -50,64 +55,61 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         super.viewDidLoad()
         let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
         guard let node =  vaseScene?.rootNode else { return }
-//        guard let modelScene = SCNScene(mdlAsset: mdlAsset),
-//            let nodeModel =  modelScene.rootNode.childNode(
-//               withName: "vase", recursively: true)
-//        else{
-//            print("fails")
-//            return}
 
         
         sceneView.delegate = self
-//
-//         Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
-//
-//         Create a new scene
+        sceneView.session.delegate = self
+        //sceneView.showsStatistics = true
+
        let scene = SCNScene()
-//
-//         Set the scene to the view
+
         sceneView.scene = scene
         sceneView.scene.rootNode.addChildNode(node)
-        sceneView.scene.rootNode.addChildNode(planesRootNode)
+        //sceneView.scene.rootNode.addChildNode(planesRootNode)
+        sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
-//
-//         Enable Default Lighting - makes the 3D text a bit poppier.
-        sceneView.autoenablesDefaultLighting = true
-        // setup the model
         setUpModel()
+        self.bilbordCreate()
+        FritzCore.configure()
+        
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-    
-        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints,ARSCNDebugOptions.showWorldOrigin]
         self.sceneView.session.run(configuration)
 
-        self.loopCoreMLUpdate()
-        //self.videoCapture.start()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        //self.videoCapture.stop()
+        sceneView.session.pause()
     }
     
-    func loopCoreMLUpdate() {
-        // Continuously run CoreML whenever it's ready. (Preventing 'hiccups' in Frame Rate)
-        
-        DispatchQueue.main.async {
-            // 1. Run Update.
-            self.updateCoreML()
-            
-            // 2. Loop this function.
-            self.loopCoreMLUpdate()
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+
+        guard currentFrameBuffer == nil, case .normal = frame.camera.trackingState else {
+            return
         }
+        currentFrameBuffer = frame.capturedImage
+        self.updateCoreML()
+    }
         
+    func bilbordCreate() {
+        fritzMaskMaterial = SCNMaterial()
+        fritzMaskMaterial.diffuse.contents = UIColor.white
+        fritzMaskMaterial.colorBufferWriteMask = .alpha
+        
+        let rectangle = SCNPlane(width: 0.0326, height: 0.058)
+        rectangle.materials = [fritzMaskMaterial]
+        
+        fritzMaskNode = SCNNode(geometry: rectangle)
+        fritzMaskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
+        fritzMaskNode?.position = SCNVector3Make(0, 0, -0.05)
+        fritzMaskNode.renderingOrder = -1
+        
+        sceneView.pointOfView?.presentation.addChildNode(fritzMaskNode!)
     }
     
     
@@ -128,7 +130,6 @@ extension ViewController {
     func predictUsingVision(imageFromArkitScene: CVPixelBuffer) {
         guard let request = request else { fatalError() }
         // vision framework configures the input size of image following our model's input configuration automatically
-        self.semaphore.wait()
         let handler = VNImageRequestHandler(cvPixelBuffer: imageFromArkitScene, orientation: .right)
         try? handler.perform([request])
 
@@ -137,30 +138,103 @@ extension ViewController {
     
     // MARK: - Post-processing
     func visionRequestDidComplete(request: VNRequest, error: Error?) {
-        //self.👨‍🔧.🏷(with: "endInference")
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
-//            if self.sceneView.scene.rootNode.childNodes.count > 0
-//            {
-//                sceneView.scene.rootNode.enumerateChildNodes { (node, stop) in
-//                    node.removeFromParentNode()
-//                }
-//            }
-
-//            DispatchQueue.main.async {
-                self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
-                for prediction in self.predictions{
-                    let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-                    self.addPlane(rect: rect)
-                }
-                self.isInferencing = false
-//            }
+            self.maxPlanesCount = predictions.count
+            self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
+            for prediction in self.predictions{
+                let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
+                self.addPlane(rect: rect)
+            }
+            self.isInferencing = false
         } else {
             
             self.isInferencing = false
         }
-        self.semaphore.signal()
     }
+    
+    private func FritzCoreMLRequest(image : FritzVisionImage, options : FritzVisionSegmentationModelOptions) {
+        
+        guard let result = try? self.fritzModel.predict(image, options: options) else {
+            self.ReleaseBuffer()
+            return
+        }
+        
+        let maskImage = result.buildSingleClassMask(
+            forClass: FritzVisionPeopleClass.person,
+            clippingScoresAbove: 0.7,
+            zeroingScoresBelow: 0.3)
+        
+        guard let CIRef = maskImage?.ciImage else {
+            self.ReleaseBuffer()
+            return
+        }
+        guard let maskCGImage: CGImage = self.convertCIImageToCGImage(inputImage: CIRef) else {
+            self.ReleaseBuffer()
+            return
+        }
+
+        DispatchQueue.main.async {
+            self.fritzMaskMaterial.diffuse.contents = maskCGImage
+        }
+        
+        self.ReleaseBuffer()
+
+    }
+    
+
+    
+    
+    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
+            return cgImage
+        }
+        return nil
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+        print("oyeaaa###########")
+        let width = CGFloat(planeAnchor.extent.x)
+        let height = CGFloat(planeAnchor.extent.z)
+        let plane = SCNPlane(width: width, height: height)
+        
+        plane.materials.first?.diffuse.contents = planeColor
+        
+        let planeNode = SCNNode(geometry: plane)
+        
+        let x = CGFloat(planeAnchor.center.x)
+        let y = CGFloat(planeAnchor.center.y)
+        let z = CGFloat(planeAnchor.center.z)
+        planeNode.position = SCNVector3(x,y,z)
+        planeNode.eulerAngles.x = -.pi / 2
+        
+        node.addChildNode(planeNode)
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        guard let planeAnchor = anchor as?  ARPlaneAnchor,
+            let planeNode = node.childNodes.first,
+            let plane = planeNode.geometry as? SCNPlane
+            else { return }
+        print("oyeaaa###########")
+        let width = CGFloat(planeAnchor.extent.x)
+        let height = CGFloat(planeAnchor.extent.z)
+        plane.width = width
+        plane.height = height
+        
+        let x = CGFloat(planeAnchor.center.x)
+        let y = CGFloat(planeAnchor.center.y)
+        let z = CGFloat(planeAnchor.center.z)
+        planeNode.position = SCNVector3(x, y, z)
+    }
+    
+    private func ReleaseBuffer() {
+         // The resulting image (mask) is available as observation.pixelBuffer
+         // Release currentBuffer when finished to allow processing next frame
+         self.currentFrameBuffer = nil
+     }
     
     func addPlane(rect : CGRect){
 
@@ -179,16 +253,12 @@ extension ViewController {
                     let rightbotTransform : matrix_float4x4 = rightbotResult.worldTransform
                     let width : CGFloat = CGFloat(abs(rightbotTransform.columns.3.x - originTransform.columns.3.x))
                     let height : CGFloat = CGFloat(abs(originTransform.columns.3.y - rightbotTransform.columns.3.y))
-                    print("the height and width:")
-                    print(width)
-                    print(height)
                     
                     let transform : matrix_float4x4 = closestResult.worldTransform
                     let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, (transform.columns.3.z + originTransform.columns.3.z + rightbotTransform.columns.3.z)/3.0)
                     // Create 3D Text
                     let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height)
                     //node.geometry?.firstMaterial = maskMaterial()
-                    
                     
                     if planesRootNode.childNodes.count > maxPlanesCount
                     {
@@ -232,14 +302,11 @@ extension ViewController {
         plane.cornerRadius = 0.005
         let planeNode = SCNNode(geometry: plane)
         planeNode.geometry?.firstMaterial?.isDoubleSided = true
-        planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .alpha
+        //planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .alpha
         planeNode.geometry?.firstMaterial?.writesToDepthBuffer = true
         planeNode.geometry?.firstMaterial?.readsFromDepthBuffer = true
         planeNode.renderingOrder = -100
-//        planeNode.geometry?.firstMaterial = maskMaterial()
-//        
-//        planeNode.physicsBody = SCNPhysicsBody(type: .static,
-//                                              shape: nil)
+        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.orange
         planeNode.position = coordinate
         return planeNode
     }
@@ -247,28 +314,21 @@ extension ViewController {
     func maskMaterial() -> SCNMaterial {
         let maskMaterial = SCNMaterial()
         maskMaterial.diffuse.contents = UIColor.white
-        
-        // another way to do this is to set a very very low transparency value (but that
-        // would not receive shadows..)
-        // mask out everything we would have drawn..
-        //maskMaterial.colorBufferWriteMask = SCNColorMask(rawValue: 0)
-        
-        // occlude (render) from both sides please
         maskMaterial.isDoubleSided = true
         return maskMaterial
     }
     //MARK: - updatePredictionByARscene
     func updateCoreML() {
-        ///////////////////////////
-        // Get Camera Image as RGB
-        if let frame = sceneView.session.currentFrame{
-            let imageBuffer = frame.capturedImage
-            self.predictUsingVision(imageFromArkitScene: imageBuffer)
 
-            
+        guard let buffer = currentFrameBuffer else { return }
+        self.predictUsingVision(imageFromArkitScene: buffer)
+        let fritzImage = FritzVisionImage(imageBuffer: buffer)
+        fritzImage.metadata = FritzVisionImageMetadata()
+        let options = FritzVisionSegmentationModelOptions()
+        options.imageCropAndScaleOption = .scaleFit
+        visionQueue.async {
+            self.FritzCoreMLRequest(image: fritzImage, options: options)
         }
-
-
 
     }
 }

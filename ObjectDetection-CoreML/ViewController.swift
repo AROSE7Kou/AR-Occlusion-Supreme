@@ -20,12 +20,8 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     @IBOutlet weak var boxesView: DrawingBoundingBoxView!
     @IBOutlet weak var sceneView: ARSCNView!
     
-    let objectDectectionModel = YOLOv3()
-    let depthDetectionModel = DeepLabV3()
-    var planeColor = UIColor.init(hue: 0.5, saturation: 0.5, brightness: 0.5, alpha: 0.5)
+    let objectDectectionModel = YOLOv3Tiny()
     private lazy var fritzModel = FritzVisionPeopleSegmentationModelFast()
-    var maxPlanesCount = 5
-    var currentPlaneCount = 0
     let visionQueue = DispatchQueue(label: "com.vision.ARML.visionqueue")
     
     
@@ -34,14 +30,20 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     var visionModel: VNCoreMLModel?
     var isInferencing = false
     var currentFrameBuffer: CVPixelBuffer?
+    var currentFrameImage : CIImage?
+    var planesNodes: [SCNNode] = []
     
     // MARK: - AV Property
     var videoCapture: VideoCapture!
-    let planesRootNode = SCNNode()
+    var planesRootNode = SCNNode()
     
     var fritzMaskNode : SCNNode!
     var fritzMaskMaterial : SCNMaterial!
     
+    // MARK: - Current Camera Orientation
+    var eularAngle_x : simd_float4x4?
+    var eularAngle_y : simd_float4x4?
+    var eularAngle_z : simd_float4x4?
     // MARK: - TableView Data
     var predictions: [VNRecognizedObjectObservation] = []
     
@@ -65,11 +67,11 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
 
         sceneView.scene = scene
         sceneView.scene.rootNode.addChildNode(node)
-        //sceneView.scene.rootNode.addChildNode(planesRootNode)
-        sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
+        sceneView.scene.rootNode.addChildNode(planesRootNode)
+        //sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
         setUpModel()
-        self.bilbordCreate()
+        //self.bilbordCreate()
         FritzCore.configure()
         
     }
@@ -110,6 +112,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
         fritzMaskNode.renderingOrder = -1
         
         sceneView.pointOfView?.presentation.addChildNode(fritzMaskNode!)
+
     }
     
     
@@ -140,24 +143,36 @@ extension ViewController {
     func visionRequestDidComplete(request: VNRequest, error: Error?) {
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
-            self.maxPlanesCount = predictions.count
             self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
             for prediction in self.predictions{
+//                visionQueue.async {
                 let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-                self.addPlane(rect: rect)
+//                      // here do the crop and fritz
+                if let smallerPiece = self.currentFrameImage?.cropped(to: rect){
+                    let fritzImage = FritzVisionImage(ciImage: smallerPiece)
+                
+                    fritzImage.metadata = FritzVisionImageMetadata()
+                    let options = FritzVisionSegmentationModelOptions()
+                    options.imageCropAndScaleOption = .scaleFit
+                    if(!self.FritzCoreMLRequest(image: fritzImage, options: options, rect: rect))
+                    {
+                        self.addPlane(rect: rect)
+                    }
+                }
+//
             }
             self.isInferencing = false
         } else {
             
             self.isInferencing = false
         }
+        self.ReleaseBuffer()
     }
     
-    private func FritzCoreMLRequest(image : FritzVisionImage, options : FritzVisionSegmentationModelOptions) {
+    private func FritzCoreMLRequest(image : FritzVisionImage, options : FritzVisionSegmentationModelOptions, rect : CGRect) -> Bool {
         
         guard let result = try? self.fritzModel.predict(image, options: options) else {
-            self.ReleaseBuffer()
-            return
+            return false
         }
         
         let maskImage = result.buildSingleClassMask(
@@ -166,77 +181,18 @@ extension ViewController {
             zeroingScoresBelow: 0.3)
         
         guard let CIRef = maskImage?.ciImage else {
-            self.ReleaseBuffer()
-            return
+            return false
         }
         guard let maskCGImage: CGImage = self.convertCIImageToCGImage(inputImage: CIRef) else {
-            self.ReleaseBuffer()
-            return
+            return false
         }
 
-        DispatchQueue.main.async {
-            self.fritzMaskMaterial.diffuse.contents = maskCGImage
-        }
+        FritzCoreMLRequestPlanes(rect : rect, maskCGImage: maskCGImage)
+        return true
         
-        self.ReleaseBuffer()
-
     }
     
-
-    
-    
-    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
-            return cgImage
-        }
-        return nil
-    }
-    
-    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
-        print("oyeaaa###########")
-        let width = CGFloat(planeAnchor.extent.x)
-        let height = CGFloat(planeAnchor.extent.z)
-        let plane = SCNPlane(width: width, height: height)
-        
-        plane.materials.first?.diffuse.contents = planeColor
-        
-        let planeNode = SCNNode(geometry: plane)
-        
-        let x = CGFloat(planeAnchor.center.x)
-        let y = CGFloat(planeAnchor.center.y)
-        let z = CGFloat(planeAnchor.center.z)
-        planeNode.position = SCNVector3(x,y,z)
-        planeNode.eulerAngles.x = -.pi / 2
-        
-        node.addChildNode(planeNode)
-    }
-    
-    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        guard let planeAnchor = anchor as?  ARPlaneAnchor,
-            let planeNode = node.childNodes.first,
-            let plane = planeNode.geometry as? SCNPlane
-            else { return }
-        print("oyeaaa###########")
-        let width = CGFloat(planeAnchor.extent.x)
-        let height = CGFloat(planeAnchor.extent.z)
-        plane.width = width
-        plane.height = height
-        
-        let x = CGFloat(planeAnchor.center.x)
-        let y = CGFloat(planeAnchor.center.y)
-        let z = CGFloat(planeAnchor.center.z)
-        planeNode.position = SCNVector3(x, y, z)
-    }
-    
-    private func ReleaseBuffer() {
-         // The resulting image (mask) is available as observation.pixelBuffer
-         // Release currentBuffer when finished to allow processing next frame
-         self.currentFrameBuffer = nil
-     }
-    
-    func addPlane(rect : CGRect){
+    private func FritzCoreMLRequestPlanes(rect : CGRect, maskCGImage: CGImage) {
 
         let screenCentre : CGPoint = CGPoint(x: rect.midX, y: rect.midY)
         let planeorigin : CGPoint = rect.origin
@@ -254,45 +210,71 @@ extension ViewController {
                     let width : CGFloat = CGFloat(abs(rightbotTransform.columns.3.x - originTransform.columns.3.x))
                     let height : CGFloat = CGFloat(abs(originTransform.columns.3.y - rightbotTransform.columns.3.y))
                     
-                    let transform : matrix_float4x4 = closestResult.worldTransform
-                    let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, (transform.columns.3.z + originTransform.columns.3.z + rightbotTransform.columns.3.z)/3.0)
+                    var transform : matrix_float4x4 = closestResult.worldTransform
+                    transform.columns.3.z = (transform.columns.3.z + originTransform.columns.3.z + rightbotTransform.columns.3.z)/3.0
+                    let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
                     // Create 3D Text
-                    let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height)
-                    //node.geometry?.firstMaterial = maskMaterial()
-                    
-                    if planesRootNode.childNodes.count > maxPlanesCount
-                    {
-                        planesRootNode.replaceChildNode(planesRootNode.childNodes[currentPlaneCount], with: node)
-                        currentPlaneCount += 1
-                        currentPlaneCount %= maxPlanesCount
-                    }
-                    else
-                    {
-                        planesRootNode.addChildNode(node)
-                    }
-                }
-            }
-            else{
-                
-                let transform : matrix_float4x4 = closestResult.worldTransform
-                let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
-                // Create 3D Text
-                let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: 0.2, planeHeight: 0.2)
-                //node.geometry?.firstMaterial = maskMaterial()
+                    let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height, maskCGImage: maskCGImage)
+//                    let rotate_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
+//                    let rotate_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
+//                    let rotate_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
+//                    let xRotateTransform = simd_mul(transform, rotate_x)
+//                    let yRotateTransform = simd_mul(xRotateTransform , rotate_y)
+//                    if eularAngle_x != nil{
+                    let finalRotateTransform = simd_mul(transform,eularAngle_y!)
+                        node.transform = SCNMatrix4(finalRotateTransform)
+//                    }
 
-
-                if planesRootNode.childNodes.count > maxPlanesCount
-                {
-                     planesRootNode.replaceChildNode(planesRootNode.childNodes[currentPlaneCount], with: node)
-                    currentPlaneCount += 1
-                    currentPlaneCount %= maxPlanesCount
-                }
-                else
-                {
+        
+                    //planesNodes.append(node)
                     planesRootNode.addChildNode(node)
                 }
-
             }
+
+        }
+
+    }
+    
+    private func addPlane(rect : CGRect){
+
+        let screenCentre : CGPoint = CGPoint(x: rect.midX, y: rect.midY)
+        let planeorigin : CGPoint = rect.origin
+        let rightbottom : CGPoint = CGPoint(x: rect.maxX, y: rect.maxY)
+        let centerTestResults : [ARHitTestResult] = sceneView.hitTest(screenCentre, types: [.featurePoint]) // Alternatively, we could use '.existingPlaneUsingExtent' for more grounded hit-test-points.
+        let originTestResults : [ARHitTestResult] = sceneView.hitTest(planeorigin, types: [.featurePoint])
+        let rightbotTestResults : [ARHitTestResult] = sceneView.hitTest(rightbottom, types: [.featurePoint])
+        if let closestResult = centerTestResults.first {
+            if let originResult = originTestResults.first{
+                if let rightbotResult = rightbotTestResults.first{
+                    
+                    
+                    let originTransform : matrix_float4x4 = originResult.worldTransform
+                    let rightbotTransform : matrix_float4x4 = rightbotResult.worldTransform
+                    let width : CGFloat = CGFloat(abs(rightbotTransform.columns.3.x - originTransform.columns.3.x))
+                    let height : CGFloat = CGFloat(abs(originTransform.columns.3.y - rightbotTransform.columns.3.y))
+                    
+                    var transform : matrix_float4x4 = closestResult.worldTransform
+                    transform.columns.3.z = (transform.columns.3.z + originTransform.columns.3.z + rightbotTransform.columns.3.z)/3.0
+                    let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
+                    // Create 3D Text
+                    let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height)
+                    let rotate_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
+//                    let rotate_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
+//                    let rotate_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
+//                    let xRotateTransform = simd_mul(transform, rotate_x)
+//                    let yRotateTransform = simd_mul(xRotateTransform , rotate_y)
+//                    if eularAngle_x != nil{
+//                        let finalRotateTransform = simd_mul(transform,eularAngle_x! )
+//                        node.transform = SCNMatrix4(finalRotateTransform)
+//                    }
+                    
+                    let finalRotateTransform = simd_mul(transform,eularAngle_y! )
+                    node.transform = SCNMatrix4(finalRotateTransform)
+                    //planesNodes.append(node)
+                    planesRootNode.addChildNode(node)
+                }
+            }
+
         }
     }
     
@@ -311,27 +293,60 @@ extension ViewController {
         return planeNode
     }
     
-    func maskMaterial() -> SCNMaterial {
-        let maskMaterial = SCNMaterial()
-        maskMaterial.diffuse.contents = UIColor.white
-        maskMaterial.isDoubleSided = true
-        return maskMaterial
+    func createPlane(rect : CGRect, coordinate: SCNVector3, planeWidth : CGFloat, planeHeight : CGFloat, maskCGImage: CGImage) -> SCNNode
+    {
+        let plane = SCNPlane(width: planeWidth, height: planeHeight)
+        plane.cornerRadius = 0.005
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.geometry?.firstMaterial?.diffuse.contents = maskCGImage
+        planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
+        planeNode.renderingOrder = -100
+        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.orange
+        planeNode.position = coordinate
+        return planeNode
     }
+    
+
+    
+//    func maskMaterial() -> SCNMaterial {
+//        let maskMaterial = SCNMaterial()
+//        maskMaterial.diffuse.contents = UIColor.white
+//        maskMaterial.isDoubleSided = true
+//        return maskMaterial
+//    }
     //MARK: - updatePredictionByARscene
     func updateCoreML() {
-
+        planesRootNode.removeFromParentNode();
+        planesRootNode = SCNNode();
+        sceneView.scene.rootNode.addChildNode(planesRootNode)
         guard let buffer = currentFrameBuffer else { return }
+        currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
+        //eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
+        eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
+        //eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
         self.predictUsingVision(imageFromArkitScene: buffer)
-        let fritzImage = FritzVisionImage(imageBuffer: buffer)
-        fritzImage.metadata = FritzVisionImageMetadata()
-        let options = FritzVisionSegmentationModelOptions()
-        options.imageCropAndScaleOption = .scaleFit
-        visionQueue.async {
-            self.FritzCoreMLRequest(image: fritzImage, options: options)
-        }
-
+        
     }
+    
+    //MARK: - help funcs
+    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
+            return cgImage
+        }
+        return nil
+    }
+    
+    
+    private func ReleaseBuffer() {
+         // The resulting image (mask) is available as observation.pixelBuffer
+         // Release currentBuffer when finished to allow processing next frame
+        self.currentFrameBuffer = nil
+        self.currentFrameImage = nil
+     }
 }
+
+
 
 
 

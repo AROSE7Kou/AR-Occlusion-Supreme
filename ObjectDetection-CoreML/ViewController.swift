@@ -19,15 +19,18 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     // MARK: - UI Properties
     @IBOutlet weak var boxesView: DrawingBoundingBoxView!
     @IBOutlet weak var sceneView: ARSCNView!
-    
-    let objectDectectionModel = YOLOv3Tiny()
+    let deepLabModel = DeepLabV3()
+    let objectDectectionModel = YOLOv3Int8LUT()
     private lazy var fritzModel = FritzVisionPeopleSegmentationModelFast()
-    let visionQueue = DispatchQueue(label: "com.vision.ARML.visionqueue")
-    
+    let visionQueue = DispatchQueue (label: "com.vision.ARML.visionqueue")
+
+    var planeNode = SCNNode()
     
     // MARK: - Vision Properties
     var request: VNCoreMLRequest?
+    var segRequest: VNCoreMLRequest?
     var visionModel: VNCoreMLModel?
+    var segModel: VNCoreMLModel?
     var isInferencing = false
     var currentFrameBuffer: CVPixelBuffer?
     var currentFrameImage : CIImage?
@@ -37,8 +40,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     var videoCapture: VideoCapture!
     var planesRootNode = SCNNode()
     
-    var fritzMaskNode : SCNNode!
-    var fritzMaskMaterial : SCNMaterial!
+    var maskMaterialImage : CGImage?
     
     // MARK: - Current Camera Orientation
     var eularAngle_x : simd_float4x4?
@@ -66,12 +68,18 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
        let scene = SCNScene()
 
         sceneView.scene = scene
+
+        let plane = SCNPlane(width: 0.1, height: 0.1)
+        self.planeNode = SCNNode(geometry: plane)
+        self.planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
+        self.planeNode.renderingOrder = -100
+        self.planeNode.position = SCNVector3Make(0, 0, -0.05)
         sceneView.scene.rootNode.addChildNode(node)
         sceneView.scene.rootNode.addChildNode(planesRootNode)
+        sceneView.scene.rootNode.addChildNode(self.planeNode)
         //sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
         setUpModel()
-        //self.bilbordCreate()
         FritzCore.configure()
         
     }
@@ -98,22 +106,6 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
         self.updateCoreML()
     }
         
-    func bilbordCreate() {
-        fritzMaskMaterial = SCNMaterial()
-        fritzMaskMaterial.diffuse.contents = UIColor.white
-        fritzMaskMaterial.colorBufferWriteMask = .alpha
-        
-        let rectangle = SCNPlane(width: 0.0326, height: 0.058)
-        rectangle.materials = [fritzMaskMaterial]
-        
-        fritzMaskNode = SCNNode(geometry: rectangle)
-        fritzMaskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
-        fritzMaskNode?.position = SCNVector3Make(0, 0, -0.05)
-        fritzMaskNode.renderingOrder = -1
-        
-        sceneView.pointOfView?.presentation.addChildNode(fritzMaskNode!)
-
-    }
     
     
     // MARK: - Setup Core ML
@@ -124,6 +116,14 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
             request?.imageCropAndScaleOption = .scaleFill
         } else {
             fatalError("fail to create vision model")
+        }
+        
+        if let segmentationModel = try? VNCoreMLModel(for: deepLabModel.model){
+            self.segModel = segmentationModel
+            segRequest = VNCoreMLRequest(model: segmentationModel, completionHandler:  segmentationComplete)
+            segRequest?.imageCropAndScaleOption = VNImageCropAndScaleOption.centerCrop
+        }else{
+            fatalError("cao")
         }
     }
 }
@@ -144,60 +144,67 @@ extension ViewController {
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
             self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
-            for prediction in self.predictions{
-//                visionQueue.async {
-                let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-//                      // here do the crop and fritz
-                if let smallerPiece = self.currentFrameImage?.cropped(to: rect){
-                    let fritzImage = FritzVisionImage(ciImage: smallerPiece)
-                
-                    fritzImage.metadata = FritzVisionImageMetadata()
-                    let options = FritzVisionSegmentationModelOptions()
-                    options.imageCropAndScaleOption = .scaleFit
-                    if(!self.FritzCoreMLRequest(image: fritzImage, options: options, rect: rect))
-                    {
-                        self.addPlane(rect: rect)
-                    }
-                }
-//
+            if self.predictions.count == 0{
+                return
             }
-            self.isInferencing = false
-        } else {
+            let prediction = self.predictions[0]
+
+            let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
             
-            self.isInferencing = false
+            if let smallerPiece = self.currentFrameImage?.cropped(to: rect){
+                if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
+                {
+                    self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
+                }
+                
+//                if let segRequest = segRequest {
+//                    let supImageRequestHandler = VNImageRequestHandler(ciImage: smallerPiece, options: [:])
+//                    try? supImageRequestHandler.perform([segRequest])
+//                    if let maskMaterialImage = self.maskMaterialImage {
+//                        self.addPlane(rect: rect, maskCGImage: maskMaterialImage)
+//                        print("maskmaterial###########")
+//                    } else {print("fail 1 ########")
+//                            self.addPlane(rect: rect)}
+//
+//                } else { print("fail 2 ##########")
+//                         self.addPlane(rect: rect) }
+            }else{
+                print("fail 3 ###########")
+                //self.addPlane(rect: rect)
+            }
         }
+            self.isInferencing = false
+//        } else {
+//
+//            self.isInferencing = false
+//        }
         self.ReleaseBuffer()
     }
-    
-    private func FritzCoreMLRequest(image : FritzVisionImage, options : FritzVisionSegmentationModelOptions, rect : CGRect) -> Bool {
-        
-        guard let result = try? self.fritzModel.predict(image, options: options) else {
-            return false
-        }
-        
-        let maskImage = result.buildSingleClassMask(
-            forClass: FritzVisionPeopleClass.person,
-            clippingScoresAbove: 0.7,
-            zeroingScoresBelow: 0.3)
-        
-        guard let CIRef = maskImage?.ciImage else {
-            return false
-        }
-        guard let maskCGImage: CGImage = self.convertCIImageToCGImage(inputImage: CIRef) else {
-            return false
+
+    func segmentationComplete(request: VNRequest, error: Error?) {
+            // Catch Errors
+        if error != nil {
+            print("Error: " + (error?.localizedDescription)!)
+            return
         }
 
-        FritzCoreMLRequestPlanes(rect : rect, maskCGImage: maskCGImage)
-        return true
         
+        if let observations = request.results as? [VNCoreMLFeatureValueObservation] {
+            if let segmentationmap = observations.first?.featureValue {
+                let array = segmentationmap.multiArrayValue!
+                let CGimage = array.cgImage(min: 0, max: 1)
+                self.maskMaterialImage = CGimage
+            }
+        }
     }
     
-    private func FritzCoreMLRequestPlanes(rect : CGRect, maskCGImage: CGImage) {
+    
+    private func addPlane(rect : CGRect, maskCGImage : CGImage) {
 
         let screenCentre : CGPoint = CGPoint(x: rect.midX, y: rect.midY)
         let planeorigin : CGPoint = rect.origin
         let rightbottom : CGPoint = CGPoint(x: rect.maxX, y: rect.maxY)
-        let centerTestResults : [ARHitTestResult] = sceneView.hitTest(screenCentre, types: [.featurePoint]) // Alternatively, we could use '.existingPlaneUsingExtent' for more grounded hit-test-points.
+        let centerTestResults : [ARHitTestResult] = sceneView.hitTest(screenCentre, types: [.featurePoint])
         let originTestResults : [ARHitTestResult] = sceneView.hitTest(planeorigin, types: [.featurePoint])
         let rightbotTestResults : [ARHitTestResult] = sceneView.hitTest(rightbottom, types: [.featurePoint])
         if let closestResult = centerTestResults.first {
@@ -215,18 +222,9 @@ extension ViewController {
                     let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
                     // Create 3D Text
                     let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height, maskCGImage: maskCGImage)
-//                    let rotate_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
-//                    let rotate_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
-//                    let rotate_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
-//                    let xRotateTransform = simd_mul(transform, rotate_x)
-//                    let yRotateTransform = simd_mul(xRotateTransform , rotate_y)
-//                    if eularAngle_x != nil{
+
                     let finalRotateTransform = simd_mul(transform,eularAngle_y!)
                         node.transform = SCNMatrix4(finalRotateTransform)
-//                    }
-
-        
-                    //planesNodes.append(node)
                     planesRootNode.addChildNode(node)
                 }
             }
@@ -258,15 +256,6 @@ extension ViewController {
                     let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
                     // Create 3D Text
                     let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height)
-                    let rotate_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
-//                    let rotate_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
-//                    let rotate_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
-//                    let xRotateTransform = simd_mul(transform, rotate_x)
-//                    let yRotateTransform = simd_mul(xRotateTransform , rotate_y)
-//                    if eularAngle_x != nil{
-//                        let finalRotateTransform = simd_mul(transform,eularAngle_x! )
-//                        node.transform = SCNMatrix4(finalRotateTransform)
-//                    }
                     
                     let finalRotateTransform = simd_mul(transform,eularAngle_y! )
                     node.transform = SCNMatrix4(finalRotateTransform)
@@ -301,19 +290,13 @@ extension ViewController {
         planeNode.geometry?.firstMaterial?.diffuse.contents = maskCGImage
         planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
         planeNode.renderingOrder = -100
-        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.orange
         planeNode.position = coordinate
         return planeNode
     }
     
 
     
-//    func maskMaterial() -> SCNMaterial {
-//        let maskMaterial = SCNMaterial()
-//        maskMaterial.diffuse.contents = UIColor.white
-//        maskMaterial.isDoubleSided = true
-//        return maskMaterial
-//    }
+
     //MARK: - updatePredictionByARscene
     func updateCoreML() {
         planesRootNode.removeFromParentNode();
@@ -343,6 +326,7 @@ extension ViewController {
          // Release currentBuffer when finished to allow processing next frame
         self.currentFrameBuffer = nil
         self.currentFrameImage = nil
+        self.maskMaterialImage = nil
      }
 }
 

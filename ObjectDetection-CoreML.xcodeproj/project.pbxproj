@@ -13,7 +13,7 @@
 		4A44655623638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655523638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel */; };
 		4A44655823638D2B009C5E4B /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655723638D2B009C5E4B /* DeepLabV3.mlmodel */; };
 		4A879B3523D0061700E37B4B /* IronMan in Resources */ = {isa = PBXBuildFile; fileRef = 4A879B3423D0061700E37B4B /* IronMan */; };
-		4A8B37FA23FB2219003D67AC /* MultiArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A8B37F923FB2219003D67AC /* MultiArray.swift */; };
+		4A8B37FC23FCD894003D67AC /* MultiArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A8B37FB23FCD894003D67AC /* MultiArray.swift */; };
 		4AC5721B23E8BCA900551745 /* Fritz-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4AC5721A23E8BCA900551745 /* Fritz-Info.plist */; };
 		554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F149B220362AB00B828B0 /* AppDelegate.swift */; };
 		554F149E220362AB00B828B0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F149D220362AB00B828B0 /* ViewController.swift */; };
@@ -41,7 +41,7 @@
 		4A44655523638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = DeepLabV3Int8LUT.mlmodel; path = ../../../../DeepLabV3Int8LUT.mlmodel; sourceTree = "<group>"; };
 		4A44655723638D2B009C5E4B /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = DeepLabV3.mlmodel; path = ../../../../DeepLabV3.mlmodel; sourceTree = "<group>"; };
 		4A879B3423D0061700E37B4B /* IronMan */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = IronMan; sourceTree = SOURCE_ROOT; };
-		4A8B37F923FB2219003D67AC /* MultiArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiArray.swift; path = ../../touge/MultiArray.swift; sourceTree = "<group>"; };
+		4A8B37FB23FCD894003D67AC /* MultiArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiArray.swift; sourceTree = "<group>"; };
 		4AC5721A23E8BCA900551745 /* Fritz-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Fritz-Info.plist"; sourceTree = SOURCE_ROOT; };
 		554F1498220362AB00B828B0 /* ArosePlanesOcclusion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ArosePlanesOcclusion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		554F149B220362AB00B828B0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -125,7 +125,7 @@
 				4A879B3423D0061700E37B4B /* IronMan */,
 				554F149F220362AB00B828B0 /* Main.storyboard */,
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
-				4A8B37F923FB2219003D67AC /* MultiArray.swift */,
+				4A8B37FB23FCD894003D67AC /* MultiArray.swift */,
 				554F149D220362AB00B828B0 /* ViewController.swift */,
 				558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */,
 				4AC5721A23E8BCA900551745 /* Fritz-Info.plist */,
@@ -298,7 +298,7 @@
 			files = (
 				554F149E220362AB00B828B0 /* ViewController.swift in Sources */,
 				4A2382292360E7C9004CFFB7 /* YOLOv3.mlmodel in Sources */,
-				4A8B37FA23FB2219003D67AC /* MultiArray.swift in Sources */,
+				4A8B37FC23FCD894003D67AC /* MultiArray.swift in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */,
 				554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */,

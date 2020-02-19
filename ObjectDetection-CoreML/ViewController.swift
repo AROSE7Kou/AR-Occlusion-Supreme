@@ -33,7 +33,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     var segModel: VNCoreMLModel?
     var isInferencing = false
     var currentFrameBuffer: CVPixelBuffer?
-    var currentFrameImage : CIImage?
+    var currentFrameImage = CIImage()
     var planesNodes: [SCNNode] = []
     
     // MARK: - AV Property
@@ -103,7 +103,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
             return
         }
         currentFrameBuffer = frame.capturedImage
-        self.updateCoreML()
+        self.updateCoreML(frame: frame)
     }
         
     
@@ -151,11 +151,11 @@ extension ViewController {
 
             let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
             
-            if let smallerPiece = self.currentFrameImage?.cropped(to: rect){
-                if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
-                {
-                    self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
-                }
+            let smallerPiece = self.currentFrameImage.cropped(to: rect)
+            if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
+            {
+                self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
+            }
                 
 //                if let segRequest = segRequest {
 //                    let supImageRequestHandler = VNImageRequestHandler(ciImage: smallerPiece, options: [:])
@@ -168,10 +168,7 @@ extension ViewController {
 //
 //                } else { print("fail 2 ##########")
 //                         self.addPlane(rect: rect) }
-            }else{
-                print("fail 3 ###########")
-                //self.addPlane(rect: rect)
-            }
+
         }
             self.isInferencing = false
 //        } else {
@@ -298,12 +295,30 @@ extension ViewController {
     
 
     //MARK: - updatePredictionByARscene
-    func updateCoreML() {
+    func updateCoreML(frame: ARFrame) {
         planesRootNode.removeFromParentNode();
         planesRootNode = SCNNode();
         sceneView.scene.rootNode.addChildNode(planesRootNode)
         guard let buffer = currentFrameBuffer else { return }
         currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
+
+//        let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation;
+        let srcWidth = CGFloat(currentFrameImage.extent.width)
+        let srcHeight = CGFloat(currentFrameImage.extent.height)
+
+        let dstWidth: CGFloat = self.sceneView.bounds.size.height
+        let dstHeight: CGFloat = self.sceneView.bounds.size.width
+
+        let scaleX = dstWidth / srcWidth
+        let scaleY = dstHeight / srcHeight
+        let scale = min(scaleX, scaleY)
+
+        let transform = CGAffineTransform.init(scaleX: scaleX, y: scaleY)
+        currentFrameImage = currentFrameImage.transformed(by: transform)
+        let oTransform = currentFrameImage.orientationTransform(for: .right)
+        //let viewsize = self.sceneView.bounds.size.height
+//        let displayTransform = frame.displayTransform(for: orientation!, viewportSize: viewsize).inverted();
+        currentFrameImage = currentFrameImage.transformed(by: oTransform)
         //eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
         eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
         //eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
@@ -325,7 +340,6 @@ extension ViewController {
          // The resulting image (mask) is available as observation.pixelBuffer
          // Release currentBuffer when finished to allow processing next frame
         self.currentFrameBuffer = nil
-        self.currentFrameImage = nil
         self.maskMaterialImage = nil
      }
 }

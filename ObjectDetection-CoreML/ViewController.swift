@@ -200,7 +200,7 @@ extension ViewController {
 
         let screenCentre : CGPoint = CGPoint(x: rect.midX, y: rect.midY)
         let planeorigin : CGPoint = rect.origin
-        let rightbottom : CGPoint = CGPoint(x: rect.maxX, y: rect.maxY)
+        let rightbottom : CGPoint = CGPoint(x: rect.maxX, y: rect.minY)
         let centerTestResults : [ARHitTestResult] = sceneView.hitTest(screenCentre, types: [.featurePoint])
         let originTestResults : [ARHitTestResult] = sceneView.hitTest(planeorigin, types: [.featurePoint])
         let rightbotTestResults : [ARHitTestResult] = sceneView.hitTest(rightbottom, types: [.featurePoint])

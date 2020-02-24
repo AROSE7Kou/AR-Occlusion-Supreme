@@ -14,6 +14,7 @@ import SceneKit.ModelIO
 import Vision
 import CoreMedia
 
+
 class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
 
     // MARK: - UI Properties
@@ -25,7 +26,8 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     let visionQueue = DispatchQueue (label: "com.vision.ARML.visionqueue")
 
     var planeNode = SCNNode()
-    
+    let semaphore = DispatchSemaphore(value: 1)
+
     // MARK: - Vision Properties
     var request: VNCoreMLRequest?
     var segRequest: VNCoreMLRequest?
@@ -53,18 +55,16 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     //private let 👨‍🔧 = 📏()
     
     let configuration = ARWorldTrackingConfiguration()
-    
     // MARK: - View Controller Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
-        guard let node =  vaseScene?.rootNode else { return }
+        guard let node =  vaseScene?.rootNode else {print("no node"); return }
 
         
         sceneView.delegate = self
         sceneView.session.delegate = self
         //sceneView.showsStatistics = true
-
        let scene = SCNScene()
 
         sceneView.scene = scene
@@ -80,6 +80,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
         //sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
         setUpModel()
+//        setUpCamera()
         FritzCore.configure()
         
     }
@@ -87,21 +88,25 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+//        print(configuration.videoFormat.imageResolution)
+//        configuration.videoFormat.imageResolution
         self.sceneView.session.run(configuration)
 
         
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        sceneView.session.pause()
-    }
+//
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//        sceneView.session.pause()
+//    }
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-
-        guard currentFrameBuffer == nil, case .normal = frame.camera.trackingState else {
-            return
-        }
+//        self.semaphore.wait()
+//        guard currentFrameBuffer == nil, case .normal = frame.camera.trackingState else {
+//            print(currentFrameBuffer == nil)
+////            print("no buffer");
+//            return
+//        }
         currentFrameBuffer = frame.capturedImage
         self.updateCoreML(frame: frame)
     }
@@ -126,12 +131,41 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
             fatalError("cao")
         }
     }
+    
+//    func setUpCamera() {
+//        videoCapture = VideoCapture()
+//        videoCapture.delegate = self
+//        videoCapture.fps = 30
+//        videoCapture.setUp(sessionPreset: .vga640x480) { success in
+//
+//            if success {
+//                // add preview view on the layer
+//                if let previewLayer = self.videoCapture.previewLayer {
+//                    self.sceneView.layer.addSublayer(previewLayer)
+////                    self.videoPreview.layer.addSublayer(previewLayer)
+//                    self.resizePreviewLayer()
+//                }
+//
+//                // start video preview when setup is done
+//                self.videoCapture.start()
+//            }
+//        }
+//    }
+    
+    func resizePreviewLayer() {
+        videoCapture.previewLayer?.frame = sceneView.bounds
+    }
 }
 
 
 extension ViewController {
     func predictUsingVision(imageFromArkitScene: CVPixelBuffer) {
-        guard let request = request else { fatalError() }
+        guard let request = request else { print("no request"); fatalError() }
+//        self.semaphore.wait()
+
+//        print("before")
+//        print(CVPixelBufferGetWidth(imageFromArkitScene))
+//        print(CVPixelBufferGetHeight(imageFromArkitScene))
         // vision framework configures the input size of image following our model's input configuration automatically
         let handler = VNImageRequestHandler(cvPixelBuffer: imageFromArkitScene, orientation: .right)
         try? handler.perform([request])
@@ -151,8 +185,10 @@ extension ViewController {
 
             let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
             
+//            let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
             let smallerPiece = self.currentFrameImage.cropped(to: rect)
-            if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
+            let flip = CGAffineTransform(scaleX: 1, y: -1)
+            if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece.transformed(by: flip))
             {
                 self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
             }
@@ -170,12 +206,13 @@ extension ViewController {
 //                         self.addPlane(rect: rect) }
 
         }
-            self.isInferencing = false
+        self.isInferencing = false
 //        } else {
 //
 //            self.isInferencing = false
 //        }
         self.ReleaseBuffer()
+//        self.semaphore.signal()
     }
 
     func segmentationComplete(request: VNRequest, error: Error?) {
@@ -291,7 +328,37 @@ extension ViewController {
         return planeNode
     }
     
+    func scaleBufferImage(input: CIImage) -> CIImage {
+//        let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation;
+        let srcWidth = CGFloat(input.extent.width) // 1920
+        let srcHeight = CGFloat(input.extent.height) // 1440
+        var output = CIImage()
+//        print("src")
+//        print(srcWidth)
+//        print(srcHeight)
+//        input.cropped(to: <#T##CGRect#>)
+        let dstWidth: CGFloat = self.sceneView.bounds.size.height   //832
+        let dstHeight: CGFloat = self.sceneView.bounds.size.width   //414
+        let centerX = srcWidth/2
+        let centerY = srcHeight/2
+        let cropRec = CGRect(x: centerX - dstWidth/2,y: centerY - dstHeight / 2,width: dstWidth,height: dstHeight)
+//        output = input.cropped(to: cropRec)
+        
+        let scaleX = dstWidth / srcWidth
+        let scaleY = dstHeight / srcHeight
+        let scale = max(scaleX, scaleY)
 
+//        let transform = CGAffineTransform.init(scaleX: scaleX, y: scaleY)
+        let transform = CGAffineTransform.identity.scaledBy(x: scaleX, y: scaleY)
+        output = input.transformed(by: transform)
+        let oTransform = output.orientationTransform(for: .right)
+        //let viewsize = self.sceneView.bounds.size.height
+//        let displayTransform = frame.displayTransform(for: orientation!, viewportSize: viewsize).inverted();
+        output = output.transformed(by: oTransform)
+        let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
+        output = output.transformed(by: flip)
+        return output
+    }
     
 
     //MARK: - updatePredictionByARscene
@@ -299,30 +366,22 @@ extension ViewController {
         planesRootNode.removeFromParentNode();
         planesRootNode = SCNNode();
         sceneView.scene.rootNode.addChildNode(planesRootNode)
-        guard let buffer = currentFrameBuffer else { return }
+        guard let buffer = currentFrameBuffer else { print("no buffer"); return }
         currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
-
-//        let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation;
-        let srcWidth = CGFloat(currentFrameImage.extent.width)
-        let srcHeight = CGFloat(currentFrameImage.extent.height)
-
-        let dstWidth: CGFloat = self.sceneView.bounds.size.height
-        let dstHeight: CGFloat = self.sceneView.bounds.size.width
-
-        let scaleX = dstWidth / srcWidth
-        let scaleY = dstHeight / srcHeight
-        let scale = min(scaleX, scaleY)
-
-        let transform = CGAffineTransform.init(scaleX: scaleX, y: scaleY)
-        currentFrameImage = currentFrameImage.transformed(by: transform)
-        let oTransform = currentFrameImage.orientationTransform(for: .right)
-        //let viewsize = self.sceneView.bounds.size.height
-//        let displayTransform = frame.displayTransform(for: orientation!, viewportSize: viewsize).inverted();
-        currentFrameImage = currentFrameImage.transformed(by: oTransform)
+        currentFrameImage = scaleBufferImage(input: currentFrameImage)
         //eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
         eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
         //eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
+//        guard let scaledBuffer = currentFrameImage.pixelBufferFromImage() else {
+//            self.predictUsingVision(imageFromArkitScene: buffer)
+//            return;
+//        }
+        let scaledBuffer = currentFrameImage.pixelBufferFromImage()
+//        print("new")
+//        print(CVPixelBufferGetWidth(scaledBuffer))
+//        print(CVPixelBufferGetHeight(scaledBuffer))
         self.predictUsingVision(imageFromArkitScene: buffer)
+//        self.predictUsingVision(imageFromArkitScene: scaledBuffer)
         
     }
     
@@ -342,8 +401,36 @@ extension ViewController {
         self.currentFrameBuffer = nil
         self.maskMaterialImage = nil
      }
+    
 }
 
+
+extension CVPixelBuffer {
+    func transformedImage(targetSize: CGSize, rotationAngle: CGFloat) -> CIImage? {
+        let image = CIImage(cvPixelBuffer: self, options: [:])
+        let scaleFactor = Float(targetSize.width) / Float(image.extent.width)
+        return image.transformed(by: CGAffineTransform(rotationAngle: rotationAngle)).applyingFilter("CIBicubicScaleTransform", parameters: ["inputScale": scaleFactor])
+    }
+}
+//// MARK: - VideoCaptureDelegate
+//extension ViewController: VideoCaptureDelegate {
+//    func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame pixelBuffer: CVPixelBuffer?, timestamp: CMTime) {
+//        // the captured image from camera is contained on pixelBuffer
+//        print("videoCapture")
+//        if !self.isInferencing, let pixelBuffer = pixelBuffer {
+//            print(CVPixelBufferGetWidth(pixelBuffer))
+//            print(CVPixelBufferGetHeight(pixelBuffer))
+//
+//            self.isInferencing = true
+//
+//            // start of measure
+////            self.👨‍🔧.🎬👏()
+//
+//            // predict!
+//            self.predictUsingVision(imageFromArkitScene: pixelBuffer)
+//        }
+//    }
+//}
 
 
 

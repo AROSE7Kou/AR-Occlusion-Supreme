@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A2382292360E7C9004CFFB7 /* YOLOv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A2382282360E7C9004CFFB7 /* YOLOv3.mlmodel */; };
-		4A23822B2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A23822A2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel */; };
-		4A44655423638D1E009C5E4B /* DeepLabV3FP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655323638D1E009C5E4B /* DeepLabV3FP16.mlmodel */; };
-		4A44655623638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655523638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel */; };
-		4A44655823638D2B009C5E4B /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655723638D2B009C5E4B /* DeepLabV3.mlmodel */; };
 		4A879B3523D0061700E37B4B /* IronMan in Resources */ = {isa = PBXBuildFile; fileRef = 4A879B3423D0061700E37B4B /* IronMan */; };
 		4A8B37FC23FCD894003D67AC /* MultiArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A8B37FB23FCD894003D67AC /* MultiArray.swift */; };
 		4AC5721B23E8BCA900551745 /* Fritz-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4AC5721A23E8BCA900551745 /* Fritz-Info.plist */; };
@@ -29,6 +24,8 @@
 		71B8323422E2B7F900207D05 /* YOLOv3Tiny.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323122E2B7F800207D05 /* YOLOv3Tiny.mlmodel */; };
 		71B8323522E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */; };
 		71BBE00822E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71BBE00522E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel */; };
+		86072E2723FF1A8C006441D5 /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 86072E2623FF1A8C006441D5 /* DeepLabV3.mlmodel */; };
+		865B60FC240458FB00B2B579 /* UIImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 865B60FB240458FA00B2B579 /* UIImage+CVPixelBuffer.swift */; };
 		BCE88F0D522CAC17F6A1CE45 /* Pods_ObjectDetection_CoreML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7730BD42FC8CED4FFA9DD242 /* Pods_ObjectDetection_CoreML.framework */; };
 /* End PBXBuildFile section */
 
@@ -60,6 +57,9 @@
 		71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3TinyInt8LUT.mlmodel; sourceTree = "<group>"; };
 		71BBE00522E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3Int8LUT.mlmodel; sourceTree = "<group>"; };
 		7730BD42FC8CED4FFA9DD242 /* Pods_ObjectDetection_CoreML.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ObjectDetection_CoreML.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		86072E2623FF1A8C006441D5 /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = DeepLabV3.mlmodel; sourceTree = "<group>"; };
+		86072E2823FF1AC1006441D5 /* YOLOv3Int8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3Int8LUT.mlmodel; sourceTree = "<group>"; };
+		865B60FB240458FA00B2B579 /* UIImage+CVPixelBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+CVPixelBuffer.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +129,8 @@
 				554F149D220362AB00B828B0 /* ViewController.swift */,
 				558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */,
 				4AC5721A23E8BCA900551745 /* Fritz-Info.plist */,
+				86072E2623FF1A8C006441D5 /* DeepLabV3.mlmodel */,
+				86072E2823FF1AC1006441D5 /* YOLOv3Int8LUT.mlmodel */,
 				71B8322322E2B0BC00207D05 /* ultils */,
 				71B8322222E2B0B200207D05 /* mlmodel */,
 				554F14A2220362AC00B828B0 /* Assets.xcassets */,
@@ -154,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				554F14AD220362DA00B828B0 /* VideoCapture.swift */,
+				865B60FB240458FA00B2B579 /* UIImage+CVPixelBuffer.swift */,
 				558918EE22089FFE00F182BA /* Measure.swift */,
 			);
 			path = ultils;
@@ -297,22 +300,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				554F149E220362AB00B828B0 /* ViewController.swift in Sources */,
-				4A2382292360E7C9004CFFB7 /* YOLOv3.mlmodel in Sources */,
 				4A8B37FC23FCD894003D67AC /* MultiArray.swift in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */,
 				554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */,
-				4A44655623638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel in Sources */,
-				4A23822B2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel in Sources */,
-				4A44655423638D1E009C5E4B /* DeepLabV3FP16.mlmodel in Sources */,
 				71B8323322E2B7F900207D05 /* YOLOv3TinyFP16.mlmodel in Sources */,
 				71B8323522E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				71BBE00822E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel in Sources */,
 				71B8323422E2B7F900207D05 /* YOLOv3Tiny.mlmodel in Sources */,
 				715E7E6C2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel in Sources */,
 				554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */,
+				865B60FC240458FB00B2B579 /* UIImage+CVPixelBuffer.swift in Sources */,
+				86072E2723FF1A8C006441D5 /* DeepLabV3.mlmodel in Sources */,
 				71B8322F22E2B0FB00207D05 /* ObjectDetector.mlmodel in Sources */,
-				4A44655823638D2B009C5E4B /* DeepLabV3.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

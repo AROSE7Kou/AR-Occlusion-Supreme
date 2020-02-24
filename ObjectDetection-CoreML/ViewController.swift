@@ -80,7 +80,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
         //sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
         setUpModel()
-        FritzCore.configure()
+        //FritzCore.configure()
         
     }
     
@@ -92,10 +92,6 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
         
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        sceneView.session.pause()
-    }
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
 
@@ -148,9 +144,10 @@ extension ViewController {
                 return
             }
             let prediction = self.predictions[0]
-
+            
             let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
             
+
             let smallerPiece = self.currentFrameImage.cropped(to: rect)
             if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
             {
@@ -296,31 +293,32 @@ extension ViewController {
 
     //MARK: - updatePredictionByARscene
     func updateCoreML(frame: ARFrame) {
-        planesRootNode.removeFromParentNode();
-        planesRootNode = SCNNode();
-        sceneView.scene.rootNode.addChildNode(planesRootNode)
+//        planesRootNode.removeFromParentNode();
+//        planesRootNode = SCNNode();
+//        sceneView.scene.rootNode.addChildNode(planesRootNode)
         guard let buffer = currentFrameBuffer else { return }
         currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
 
-//        let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation;
+        print(currentFrameImage.extent.height)
+        print(currentFrameImage.extent.width)
+    
         let srcWidth = CGFloat(currentFrameImage.extent.width)
         let srcHeight = CGFloat(currentFrameImage.extent.height)
-
-        let dstWidth: CGFloat = self.sceneView.bounds.size.height
-        let dstHeight: CGFloat = self.sceneView.bounds.size.width
-
+//
+        let dstWidth: CGFloat = 828
+        let dstHeight: CGFloat = 1792
+        print(dstWidth)
+        print(dstHeight)
         let scaleX = dstWidth / srcWidth
         let scaleY = dstHeight / srcHeight
-        let scale = min(scaleX, scaleY)
 
-        let transform = CGAffineTransform.init(scaleX: scaleX, y: scaleY)
-        currentFrameImage = currentFrameImage.transformed(by: transform)
+        let scale = CGAffineTransform.identity.scaledBy(x: scaleX, y: scaleY)
+        currentFrameImage = currentFrameImage.transformed(by: scale)
         let oTransform = currentFrameImage.orientationTransform(for: .right)
-        //let viewsize = self.sceneView.bounds.size.height
-//        let displayTransform = frame.displayTransform(for: orientation!, viewportSize: viewsize).inverted();
         currentFrameImage = currentFrameImage.transformed(by: oTransform)
+ 
         //eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
-        eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
+        //eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
         //eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
         self.predictUsingVision(imageFromArkitScene: buffer)
         

@@ -69,14 +69,14 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
 
         sceneView.scene = scene
 
-        let plane = SCNPlane(width: 0.1, height: 0.1)
+        let plane = SCNPlane(width: 0.424, height: 0.832)
         self.planeNode = SCNNode(geometry: plane)
         self.planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
         self.planeNode.renderingOrder = -100
-        self.planeNode.position = SCNVector3Make(0, 0, -0.05)
+        self.planeNode.position = SCNVector3Make(-0.1, -0.3, -1)
         sceneView.scene.rootNode.addChildNode(node)
         sceneView.scene.rootNode.addChildNode(planesRootNode)
-        sceneView.scene.rootNode.addChildNode(self.planeNode)
+        sceneView.pointOfView?.presentation.addChildNode(self.planeNode)
         //sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
         setUpModel()
@@ -95,10 +95,7 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
 
-        guard currentFrameBuffer == nil, case .normal = frame.camera.trackingState else {
-            return
-        }
-        currentFrameBuffer = frame.capturedImage
+
         self.updateCoreML(frame: frame)
     }
         
@@ -126,10 +123,10 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
 
 
 extension ViewController {
-    func predictUsingVision(imageFromArkitScene: CVPixelBuffer) {
+    func predictUsingVision(imageFromArkitScene: CIImage) {
         guard let request = request else { fatalError() }
         // vision framework configures the input size of image following our model's input configuration automatically
-        let handler = VNImageRequestHandler(cvPixelBuffer: imageFromArkitScene, orientation: .right)
+        let handler = VNImageRequestHandler(ciImage: imageFromArkitScene)
         try? handler.perform([request])
 
     }
@@ -145,10 +142,31 @@ extension ViewController {
             }
             let prediction = self.predictions[0]
             
-            let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-            
+            let rect = self.boxesView.createLabelAndBox(prediction: prediction)
+            let im = currentFrameImage
+            var newWidth : CGFloat
+            var newHeight : CGFloat
+            if rect.maxX > self.sceneView.bounds.width || rect.maxY > self.sceneView.bounds.height
+            {
+                newWidth = self.sceneView.bounds.width - rect.origin.x - 0.5
+                newHeight = self.sceneView.bounds.height - rect.origin.y - 0.5
+            }
+            else
+            {
+                newHeight = rect.height
+                newWidth = rect.width
+            }
+            print("#######")
+            print(im)
+            print(im.extent.maxY)
+            print(im.extent.maxX)
+            let cropRect: CGRect = CGRect.init(x: rect.origin.x + im.extent.origin.x, y: rect.origin.y + im.extent.origin.y, width: newWidth, height: newHeight)
+            //let cropRect: CGRect = CGRect.init(x:im.extent.origin.x, y: im.extent.origin.y, width: 50, height: 50)
+            let smallerPiece = im.cropped(to: cropRect)
+            print(smallerPiece)
+            print("#############")
 
-            let smallerPiece = self.currentFrameImage.cropped(to: rect)
+
             if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
             {
                 self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
@@ -296,31 +314,15 @@ extension ViewController {
 //        planesRootNode.removeFromParentNode();
 //        planesRootNode = SCNNode();
 //        sceneView.scene.rootNode.addChildNode(planesRootNode)
-        guard let buffer = currentFrameBuffer else { return }
-        currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
 
-        print(currentFrameImage.extent.height)
-        print(currentFrameImage.extent.width)
-    
-        let srcWidth = CGFloat(currentFrameImage.extent.width)
-        let srcHeight = CGFloat(currentFrameImage.extent.height)
-//
-        let dstWidth: CGFloat = 828
-        let dstHeight: CGFloat = 1792
-        print(dstWidth)
-        print(dstHeight)
-        let scaleX = dstWidth / srcWidth
-        let scaleY = dstHeight / srcHeight
-
-        let scale = CGAffineTransform.identity.scaledBy(x: scaleX, y: scaleY)
-        currentFrameImage = currentFrameImage.transformed(by: scale)
-        let oTransform = currentFrameImage.orientationTransform(for: .right)
-        currentFrameImage = currentFrameImage.transformed(by: oTransform)
- 
-        //eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
-        //eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
-        //eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
-        self.predictUsingVision(imageFromArkitScene: buffer)
+        
+        let buffer = frame.capturedImage
+        let screenImage = adjustTheCapturedFrame(currentFrameBuffer: buffer)
+        currentFrameImage = screenImage
+        eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
+        eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
+        eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
+        self.predictUsingVision(imageFromArkitScene: screenImage)
         
     }
     
@@ -331,6 +333,24 @@ extension ViewController {
             return cgImage
         }
         return nil
+    }
+    
+    func adjustTheCapturedFrame(currentFrameBuffer: CVPixelBuffer) -> CIImage
+    {
+        
+        var im = CIImage.init(cvPixelBuffer: currentFrameBuffer);
+        let oTransform = im.orientationTransform(for: .right)
+        im = im.transformed(by: oTransform)
+        
+        let srcWidth = CGFloat(im.extent.width)
+        let srcHeight = CGFloat(im.extent.height)
+        let dstWidth: CGFloat = self.sceneView.bounds.size.width
+        let dstHeight: CGFloat = self.sceneView.bounds.size.height
+        
+        let cropRect = CGRect.init(x: srcWidth/2 - dstWidth/2, y: srcHeight/2 - dstHeight/2, width: dstWidth, height: dstHeight)
+        im = im.cropped(to: cropRect)
+        
+        return im
     }
     
     

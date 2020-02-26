@@ -27,33 +27,21 @@ class DrawingBoundingBoxView: UIView {
         }
     }
     
-    public var predictedObjects: [VNRecognizedObjectObservation] = [] {
-        didSet {
-            self.drawBoxs(with: predictedObjects)
-            self.setNeedsDisplay()
-        }
-    }
     
-    func drawBoxs(with predictions: [VNRecognizedObjectObservation]) {
-        subviews.forEach({ $0.removeFromSuperview() })
-        
-        for prediction in predictions {
-            createLabelAndBox(prediction: prediction)
-        }
-    }
-    
+
     func createLabelAndBox(prediction: VNRecognizedObjectObservation) -> CGRect {
         //subviews.forEach({ $0.removeFromSuperview() })
         let labelString: String? = prediction.label
         let color: UIColor = labelColor(with: labelString ?? "N/A")
         let scale = CGAffineTransform.identity.scaledBy(x: bounds.width, y: bounds.height)
-        let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
+        let transform = CGAffineTransform(scaleX: 1, y: 1)//.translatedBy(x: 0, y: 0.5)
         let bgRect = prediction.boundingBox.applying(transform).applying(scale)
+        let boundingRect = CGRect.init(x: bgRect.origin.x, y: bounds.height - bgRect.maxY, width: bgRect.width, height: bgRect.height)
 //        print("########")
 //        print(prediction.boundingBox)
 //        print(bgRect)
 //        print("########")
-        let bgView = UIView(frame: bgRect)
+        let bgView = UIView(frame: boundingRect)
         bgView.layer.borderColor = color.cgColor
         bgView.layer.borderWidth = 4
         bgView.backgroundColor = UIColor.clear
@@ -65,7 +53,7 @@ class DrawingBoundingBoxView: UIView {
         label.textColor = UIColor.black
         label.backgroundColor = color
         label.sizeToFit()
-        label.frame = CGRect(x: bgRect.origin.x, y: bgRect.origin.y - label.frame.height,
+        label.frame = CGRect(x: boundingRect.origin.x, y: boundingRect.origin.y - label.frame.height,
                              width: label.frame.width, height: label.frame.height)
         addSubview(label)
         return bgRect

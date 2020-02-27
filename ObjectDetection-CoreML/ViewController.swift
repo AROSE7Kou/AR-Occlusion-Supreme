@@ -183,12 +183,13 @@ extension ViewController {
             }
             let prediction = self.predictions[0]
 
-            let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-            
+            var rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
+//            let flip = CGAffineTransform(scaleX: 1, y: -1)
+            let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
+            rect = rect.applying(flip)
 //            let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
             let smallerPiece = self.currentFrameImage.cropped(to: rect)
-            let flip = CGAffineTransform(scaleX: 1, y: -1)
-            if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece.transformed(by: flip))
+            if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
             {
                 self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
             }
@@ -355,8 +356,8 @@ extension ViewController {
         //let viewsize = self.sceneView.bounds.size.height
 //        let displayTransform = frame.displayTransform(for: orientation!, viewportSize: viewsize).inverted();
         output = output.transformed(by: oTransform)
-        let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
-        output = output.transformed(by: flip)
+//        let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
+//        output = output.transformed(by: flip)
         return output
     }
     

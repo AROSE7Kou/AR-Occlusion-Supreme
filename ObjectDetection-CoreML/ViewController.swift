@@ -68,14 +68,14 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
        let scene = SCNScene()
 
 
-        let plane = SCNPlane(width: 0.1, height: 0.1)
+        let plane = SCNPlane(width: 0.424, height: 0.832)
         self.planeNode = SCNNode(geometry: plane)
         self.planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
         self.planeNode.renderingOrder = -100
-        self.planeNode.position = SCNVector3Make(0, 0, -0.05)
+        self.planeNode.position = SCNVector3Make(0, 0, -1)
         sceneView.scene.rootNode.addChildNode(node)
         sceneView.scene.rootNode.addChildNode(planesRootNode)
-        sceneView.scene.rootNode.addChildNode(self.planeNode)
+        sceneView.pointOfView?.presentation.addChildNode(self.planeNode)
         //sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
 
         setUpModel()
@@ -183,24 +183,25 @@ extension ViewController {
     // MARK: - Post-processing
     func visionRequestDidComplete(request: VNRequest, error: Error?) {
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
-            self.predictions = predictions
-            self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
-            self.sceneView.subviews.forEach({ $0.removeFromSuperview() })
-            if self.predictions.count == 0{
-                return
-            }
-            let prediction = self.predictions[0]
+            DispatchQueue.main.async {
+                self.predictions = predictions
+                self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
+                self.sceneView.subviews.forEach({ $0.removeFromSuperview() })
+                if self.predictions.count == 0{
+                    return
+                }
+                let prediction = self.predictions[0]
 
-            var rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-            drawBox(bgRect: rect)
-//            let flip = CGAffineTransform(scaleX: 1, y: -1)
-            let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
-            rect = rect.applying(flip)
-//            let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
-            let smallerPiece = self.currentFrameImage.cropped(to: rect)
-            if let cgmask = convertCIImageToCGImage(inputImage: smallerPiece)
-            {
-                self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
+                var rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
+        //            let flip = CGAffineTransform(scaleX: 1, y: -1)
+                let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 104.867, y: -832)
+                rect = rect.applying(flip)
+        //            let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
+                let smallerPiece = self.currentFrameImage.cropped(to: rect)
+                if let cgmask = self.convertCIImageToCGImage(inputImage: smallerPiece)
+                {
+                    self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
+                }
             }
                 
 //                if let segRequest = segRequest {

@@ -67,7 +67,6 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
         //sceneView.showsStatistics = true
        let scene = SCNScene()
 
-        sceneView.scene = scene
 
         let plane = SCNPlane(width: 0.1, height: 0.1)
         self.planeNode = SCNNode(geometry: plane)
@@ -167,23 +166,33 @@ extension ViewController {
 //        print(CVPixelBufferGetWidth(imageFromArkitScene))
 //        print(CVPixelBufferGetHeight(imageFromArkitScene))
         // vision framework configures the input size of image following our model's input configuration automatically
-        let handler = VNImageRequestHandler(cvPixelBuffer: imageFromArkitScene, orientation: .right)
+        let handler = VNImageRequestHandler(cvPixelBuffer: imageFromArkitScene, orientation: .leftMirrored)
         try? handler.perform([request])
 
     }
     
+    
+    func drawBox(bgRect: CGRect) {
+        let bgView = UIView(frame: bgRect)
+        bgView.layer.borderColor = UIColor.black.cgColor
+        bgView.layer.borderWidth = 4
+        bgView.backgroundColor = UIColor.clear
+        self.sceneView.addSubview(bgView)
+    }
     
     // MARK: - Post-processing
     func visionRequestDidComplete(request: VNRequest, error: Error?) {
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
             self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
+            self.sceneView.subviews.forEach({ $0.removeFromSuperview() })
             if self.predictions.count == 0{
                 return
             }
             let prediction = self.predictions[0]
 
             var rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
+            drawBox(bgRect: rect)
 //            let flip = CGAffineTransform(scaleX: 1, y: -1)
             let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
             rect = rect.applying(flip)
@@ -334,10 +343,6 @@ extension ViewController {
         let srcWidth = CGFloat(input.extent.width) // 1920
         let srcHeight = CGFloat(input.extent.height) // 1440
         var output = CIImage()
-//        print("src")
-//        print(srcWidth)
-//        print(srcHeight)
-//        input.cropped(to: <#T##CGRect#>)
         let dstWidth: CGFloat = self.sceneView.bounds.size.height   //832
         let dstHeight: CGFloat = self.sceneView.bounds.size.width   //414
         let centerX = srcWidth/2
@@ -361,6 +366,27 @@ extension ViewController {
         return output
     }
     
+    func cropBufferImage(input: CIImage) -> CIImage {
+//        let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation;
+        let srcWidth = CGFloat(input.extent.width) // 1920
+        let srcHeight = CGFloat(input.extent.height) // 1440
+        var output = CIImage()
+        let dstWidth: CGFloat = self.sceneView.bounds.size.height   //832
+        let dstHeight: CGFloat = self.sceneView.bounds.size.width   //414
+        let centerX = srcWidth/2
+        let centerY = srcHeight/2
+        let targetHeight = dstHeight * srcWidth / dstWidth
+        let cropRec = CGRect(x: 0,y: centerY - targetHeight / 2, width: srcWidth, height: targetHeight)
+        output = input.cropped(to: cropRec)
+
+        let oTransform = output.orientationTransform(for: .right)
+//        let displayTransform = frame.displayTransform(for: orientation!, viewportSize: viewsize).inverted();
+//        output = output.transformed(by: oTransform)
+//        let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -832)
+//        output = output.transformed(by: flip)
+        return output
+    }
+    
 
     //MARK: - updatePredictionByARscene
     func updateCoreML(frame: ARFrame) {
@@ -368,8 +394,10 @@ extension ViewController {
         planesRootNode = SCNNode();
         sceneView.scene.rootNode.addChildNode(planesRootNode)
         guard let buffer = currentFrameBuffer else { print("no buffer"); return }
-        currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
-        currentFrameImage = scaleBufferImage(input: currentFrameImage)
+        currentFrameImage = cropBufferImage(input: CIImage.init(cvPixelBuffer: buffer))
+//        currentFrameImage = CIImage.init(cvPixelBuffer: buffer);
+//        currentFrameImage = scaleBufferImage(input: currentFrameImage)
+//        currentFrameImage = cropBufferImage(input: currentFrameImage)
         //eularAngle_x = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.x, 1, 0, 0))
         eularAngle_y = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.y, 0, 1, 0))
         //eularAngle_z = simd_float4x4(SCNMatrix4MakeRotation(sceneView.session.currentFrame!.camera.eulerAngles.z, 0, 0, 1))
@@ -378,11 +406,15 @@ extension ViewController {
 //            return;
 //        }
         let scaledBuffer = currentFrameImage.pixelBufferFromImage()
+        currentFrameImage = scaleBufferImage(input: currentFrameImage)
+
 //        print("new")
 //        print(CVPixelBufferGetWidth(scaledBuffer))
 //        print(CVPixelBufferGetHeight(scaledBuffer))
-        self.predictUsingVision(imageFromArkitScene: buffer)
-//        self.predictUsingVision(imageFromArkitScene: scaledBuffer)
+//        self.predictUsingVision(imageFromArkitScene: buffer)
+//        self.predictUsingVision(imageFromArkitScene: buffer)
+
+        self.predictUsingVision(imageFromArkitScene: scaledBuffer)
         
     }
     

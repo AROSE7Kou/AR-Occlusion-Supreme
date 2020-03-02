@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/doyounggwak/Project/MoTLabs/github_project/ml-ios-projects/SSDMobileNet-CoreML/ObjectDetection-CoreML.xcodeproj">
+      location = "group:../ObjectDetection-CoreML/furniture pics">
+   </FileRef>
+   <FileRef
+      location = "group:../ObjectDetection-CoreML/icon pics">
+   </FileRef>
+   <FileRef
+      location = "self:">
    </FileRef>
 </Workspace>

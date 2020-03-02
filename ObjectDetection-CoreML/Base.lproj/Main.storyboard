@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina5_9" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,24 +12,102 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="ObjectDetection_CoreML" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <arscnView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hTj-Rq-77x">
-                                <rect key="frame" x="0.0" y="30" width="375" height="748"/>
-                            </arscnView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="am0-wE-ezc" customClass="DrawingBoundingBoxView" customModule="ObjectDetection_CoreML" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="30" width="375" height="748"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="804"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Q6A-di-aGg">
+                                <rect key="frame" x="0.0" y="801" width="414" height="84"/>
+                                <subviews>
+                                    <stackView contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="lQ8-gO-9rt">
+                                        <rect key="frame" x="2" y="8" width="400" height="40"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1m9-GW-C8M" userLabel="Desk">
+                                                <rect key="frame" x="0.0" y="0.0" width="80" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="80" id="GLZ-9P-x6w"/>
+                                                    <constraint firstAttribute="height" constant="40" id="Vvv-SM-bjO"/>
+                                                </constraints>
+                                                <inset key="imageEdgeInsets" minX="0.0" minY="5" maxX="0.0" maxY="0.0"/>
+                                                <state key="normal" image="desk.jpeg"/>
+                                                <connections>
+                                                    <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="P9Z-CA-SKy"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hU5-QP-xan" userLabel="Bed">
+                                                <rect key="frame" x="80" y="0.0" width="80" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="40" id="BpY-iV-vCH"/>
+                                                    <constraint firstAttribute="width" constant="80" id="StR-EG-PQ2"/>
+                                                </constraints>
+                                                <inset key="imageEdgeInsets" minX="5" minY="0.0" maxX="5" maxY="0.0"/>
+                                                <state key="normal" image="bed.jpeg"/>
+                                                <connections>
+                                                    <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jl8-sm-Peg"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VBV-SS-2IP" userLabel="Cup">
+                                                <rect key="frame" x="160" y="0.0" width="80" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="80" id="RFC-5s-Hgd"/>
+                                                    <constraint firstAttribute="height" constant="40" id="hau-x8-Fri"/>
+                                                </constraints>
+                                                <inset key="imageEdgeInsets" minX="20" minY="0.0" maxX="20" maxY="0.0"/>
+                                                <state key="normal" image="cup.jpeg"/>
+                                                <connections>
+                                                    <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Zi1-oR-J63"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gmc-V6-04P" userLabel="Chair">
+                                                <rect key="frame" x="240" y="0.0" width="80" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="40" id="7Xl-4h-f4T"/>
+                                                    <constraint firstAttribute="width" constant="80" id="RZq-jr-lZf"/>
+                                                </constraints>
+                                                <inset key="imageEdgeInsets" minX="10" minY="0.0" maxX="10" maxY="0.0"/>
+                                                <state key="normal" image="chair.jpeg"/>
+                                                <connections>
+                                                    <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fyj-gJ-fO8"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iFb-vk-tt9" userLabel="Sofa">
+                                                <rect key="frame" x="320" y="0.0" width="80" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="80" id="KO9-iD-SMK"/>
+                                                    <constraint firstAttribute="height" constant="40" id="vWs-bI-GHn"/>
+                                                </constraints>
+                                                <inset key="imageEdgeInsets" minX="5" minY="0.0" maxX="5" maxY="0.0"/>
+                                                <state key="normal" image="sofa.jpg"/>
+                                                <connections>
+                                                    <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="3e9-tC-jzS"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="lQ8-gO-9rt" firstAttribute="leading" secondItem="Q6A-di-aGg" secondAttribute="leading" constant="2" id="5R4-Hh-Hhd"/>
+                                    <constraint firstItem="lQ8-gO-9rt" firstAttribute="top" secondItem="Q6A-di-aGg" secondAttribute="top" constant="8" id="LCm-0p-QYO"/>
+                                </constraints>
+                            </view>
+                            <arscnView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hTj-Rq-77x">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="804"/>
+                            </arscnView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="am0-wE-ezc" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="topMargin" constant="-14" id="A8t-dz-yQb"/>
+                            <constraint firstItem="Q6A-di-aGg" firstAttribute="trailing" secondItem="am0-wE-ezc" secondAttribute="trailing" id="26n-Wd-06J"/>
+                            <constraint firstItem="am0-wE-ezc" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="topMargin" constant="-44" id="A8t-dz-yQb"/>
                             <constraint firstItem="am0-wE-ezc" firstAttribute="top" secondItem="hTj-Rq-77x" secondAttribute="top" id="BXB-Xb-jJ6"/>
-                            <constraint firstItem="am0-wE-ezc" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="CmG-b0-wZX"/>
+                            <constraint firstItem="am0-wE-ezc" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" constant="-58" id="CmG-b0-wZX"/>
+                            <constraint firstItem="Q6A-di-aGg" firstAttribute="bottom" secondItem="8bC-Xf-vdC" secondAttribute="bottom" constant="-11" id="KVq-K8-RPg"/>
+                            <constraint firstItem="Q6A-di-aGg" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="757" id="Kzn-0t-wfO"/>
                             <constraint firstItem="am0-wE-ezc" firstAttribute="trailing" secondItem="hTj-Rq-77x" secondAttribute="trailing" id="OZ5-lr-zOW"/>
                             <constraint firstItem="am0-wE-ezc" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="bWs-Vg-Nbd"/>
+                            <constraint firstItem="Q6A-di-aGg" firstAttribute="leading" secondItem="am0-wE-ezc" secondAttribute="leading" id="i4v-ol-mq1"/>
                             <constraint firstItem="hTj-Rq-77x" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="oGS-bh-336"/>
                             <constraint firstItem="am0-wE-ezc" firstAttribute="leading" secondItem="hTj-Rq-77x" secondAttribute="leading" id="qtw-vk-38G"/>
                             <constraint firstItem="am0-wE-ezc" firstAttribute="centerX" secondItem="hTj-Rq-77x" secondAttribute="centerX" id="sCf-Wd-L5i"/>
@@ -45,7 +122,14 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="133.59999999999999" y="130.78817733990149"/>
+            <point key="canvasLocation" x="133.33333333333334" y="130.58035714285714"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="bed.jpeg" width="800" height="450"/>
+        <image name="chair.jpeg" width="1000" height="1000"/>
+        <image name="cup.jpeg" width="500" height="500"/>
+        <image name="desk.jpeg" width="300" height="168"/>
+        <image name="sofa.jpg" width="1132" height="642"/>
+    </resources>
 </document>

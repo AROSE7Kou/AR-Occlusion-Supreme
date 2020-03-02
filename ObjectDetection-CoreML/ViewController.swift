@@ -195,26 +195,30 @@ extension ViewController {
                 var rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
         //            let flip = CGAffineTransform(scaleX: 1, y: -1)
                 let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 104.867, y: -832)
-                rect = rect.applying(flip)
+                let cutRect = rect.applying(flip)
         //            let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
-                let smallerPiece = self.currentFrameImage.cropped(to: rect)
-                if let cgmask = self.convertCIImageToCGImage(inputImage: smallerPiece)
-                {
-                    self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
-                }
-            }
+                let smallerPiece = self.currentFrameImage.cropped(to: cutRect)
+//                if let cgmask = self.convertCIImageToCGImage(inputImage: smallerPiece)
+//                {
+//                    self.planeNode.geometry?.firstMaterial?.diffuse.contents = cgmask
+//                }
+            
                 
-//                if let segRequest = segRequest {
-//                    let supImageRequestHandler = VNImageRequestHandler(ciImage: smallerPiece, options: [:])
-//                    try? supImageRequestHandler.perform([segRequest])
-//                    if let maskMaterialImage = self.maskMaterialImage {
+                if let segRequest = self.segRequest {
+                    let supImageRequestHandler = VNImageRequestHandler(ciImage: smallerPiece, options: [:])
+                    try? supImageRequestHandler.perform([segRequest])
+                    if let maskMaterialImage = self.maskMaterialImage {
+                        self.planeNode.geometry?.firstMaterial?.diffuse.contents = maskMaterialImage
+                        
 //                        self.addPlane(rect: rect, maskCGImage: maskMaterialImage)
-//                        print("maskmaterial###########")
-//                    } else {print("fail 1 ########")
-//                            self.addPlane(rect: rect)}
-//
-//                } else { print("fail 2 ##########")
-//                         self.addPlane(rect: rect) }
+//                        self.addPlane(rect: rect)
+                        print("maskmaterial###########")
+                    } else {print("fail 1 ########")
+                            self.addPlane(rect: rect)}
+
+                } else { print("fail 2 ##########")
+                         self.addPlane(rect: rect) }
+            }
 
         }
         self.isInferencing = false
@@ -333,7 +337,7 @@ extension ViewController {
         plane.cornerRadius = 0.005
         let planeNode = SCNNode(geometry: plane)
         planeNode.geometry?.firstMaterial?.diffuse.contents = maskCGImage
-        planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
+//        planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .all
         planeNode.renderingOrder = -100
         planeNode.position = coordinate
         return planeNode

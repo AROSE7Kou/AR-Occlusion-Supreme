@@ -173,8 +173,10 @@ extension ViewController {
                 var rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
         //            let flip = CGAffineTransform(scaleX: 1, y: -1)
                 let flip = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 104.867, y: -832)
-                let cutRect = rect.applying(flip)
-        //            let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
+                var cutRect = rect.applying(flip)
+                let expand = CGAffineTransform(scaleX: 1.5, y: 1.5).translatedBy(x: -70, y: -115)
+                cutRect = cutRect.applying(expand)
+//                    let smallerPiece = scaleBufferImage(input: self.currentFrameImage.cropped(to: rect))
                 let smallerPiece = self.currentFrameImage.cropped(to: cutRect)
 //                if let cgmask = self.convertCIImageToCGImage(inputImage: smallerPiece)
 //                {

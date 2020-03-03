@@ -16,11 +16,10 @@
 		554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F14AD220362DA00B828B0 /* VideoCapture.swift */; };
 		558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */; };
 		558918EF22089FFE00F182BA /* Measure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558918EE22089FFE00F182BA /* Measure.swift */; };
-		715E7E6C2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 715E7E6B2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel */; };
-		71B8322F22E2B0FB00207D05 /* ObjectDetector.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8322B22E2B0FB00207D05 /* ObjectDetector.mlmodel */; };
-		71B8323322E2B7F900207D05 /* YOLOv3TinyFP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323022E2B7F500207D05 /* YOLOv3TinyFP16.mlmodel */; };
-		71B8323422E2B7F900207D05 /* YOLOv3Tiny.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323122E2B7F800207D05 /* YOLOv3Tiny.mlmodel */; };
-		71B8323522E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */; };
+		92AF8358240DBBC600F342A0 /* MultiArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AF8357240DBBC600F342A0 /* MultiArray.swift */; };
+		92AF835A240DC96A00F342A0 /* CGImage+RawBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AF8359240DC96A00F342A0 /* CGImage+RawBytes.swift */; };
+		92AF835D240DCF5A00F342A0 /* FCRN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 92AF835B240DCF5A00F342A0 /* FCRN.mlmodel */; };
+		92AF835E240DCF5A00F342A0 /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 92AF835C240DCF5A00F342A0 /* DeepLabV3.mlmodel */; };
 		BA0E9DCB23FCC38C00058180 /* 3D Objects in Resources */ = {isa = PBXBuildFile; fileRef = BA0E9DCA23FCC38C00058180 /* 3D Objects */; };
 		BA4639AA240B787000A17F36 /* furniture pics in Resources */ = {isa = PBXBuildFile; fileRef = BA4639A8240B786F00A17F36 /* furniture pics */; };
 		BABE3D6A240B804500FBD604 /* cup.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D65240B804200FBD604 /* cup.jpeg */; };
@@ -42,11 +41,10 @@
 		554F14AD220362DA00B828B0 /* VideoCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 		558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingBoundingBoxView.swift; sourceTree = "<group>"; };
 		558918EE22089FFE00F182BA /* Measure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Measure.swift; sourceTree = "<group>"; };
-		715E7E6B2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MobileNetV2_SSDLite.mlmodel; sourceTree = "<group>"; };
-		71B8322B22E2B0FB00207D05 /* ObjectDetector.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ObjectDetector.mlmodel; sourceTree = "<group>"; };
-		71B8323022E2B7F500207D05 /* YOLOv3TinyFP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3TinyFP16.mlmodel; sourceTree = "<group>"; };
-		71B8323122E2B7F800207D05 /* YOLOv3Tiny.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3Tiny.mlmodel; sourceTree = "<group>"; };
-		71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3TinyInt8LUT.mlmodel; sourceTree = "<group>"; };
+		92AF8357240DBBC600F342A0 /* MultiArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiArray.swift; sourceTree = "<group>"; };
+		92AF8359240DC96A00F342A0 /* CGImage+RawBytes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+RawBytes.swift"; sourceTree = "<group>"; };
+		92AF835B240DCF5A00F342A0 /* FCRN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = FCRN.mlmodel; sourceTree = "<group>"; };
+		92AF835C240DCF5A00F342A0 /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = DeepLabV3.mlmodel; sourceTree = "<group>"; };
 		BA0E9DCA23FCC38C00058180 /* 3D Objects */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "3D Objects"; sourceTree = "<group>"; };
 		BA4639A8240B786F00A17F36 /* furniture pics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "furniture pics"; sourceTree = "<group>"; };
 		BABE3D65240B804200FBD604 /* cup.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = cup.jpeg; path = "icon pics/cup.jpeg"; sourceTree = "<group>"; };
@@ -97,6 +95,8 @@
 				554F149F220362AB00B828B0 /* Main.storyboard */,
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
 				554F149D220362AB00B828B0 /* ViewController.swift */,
+				92AF8357240DBBC600F342A0 /* MultiArray.swift */,
+				92AF8359240DC96A00F342A0 /* CGImage+RawBytes.swift */,
 				558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */,
 				71B8322322E2B0BC00207D05 /* ultils */,
 				71B8322222E2B0B200207D05 /* mlmodel */,
@@ -110,9 +110,8 @@
 		71B8322222E2B0B200207D05 /* mlmodel */ = {
 			isa = PBXGroup;
 			children = (
-				71B8323622E2B99500207D05 /* YOLOv3Tiny */,
-				715E7E6B2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel */,
-				71B8322B22E2B0FB00207D05 /* ObjectDetector.mlmodel */,
+				92AF835C240DCF5A00F342A0 /* DeepLabV3.mlmodel */,
+				92AF835B240DCF5A00F342A0 /* FCRN.mlmodel */,
 			);
 			path = mlmodel;
 			sourceTree = "<group>";
@@ -124,16 +123,6 @@
 				558918EE22089FFE00F182BA /* Measure.swift */,
 			);
 			path = ultils;
-			sourceTree = "<group>";
-		};
-		71B8323622E2B99500207D05 /* YOLOv3Tiny */ = {
-			isa = PBXGroup;
-			children = (
-				71B8323122E2B7F800207D05 /* YOLOv3Tiny.mlmodel */,
-				71B8323022E2B7F500207D05 /* YOLOv3TinyFP16.mlmodel */,
-				71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */,
-			);
-			path = YOLOv3Tiny;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -219,13 +208,12 @@
 				554F149E220362AB00B828B0 /* ViewController.swift in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */,
+				92AF835A240DC96A00F342A0 /* CGImage+RawBytes.swift in Sources */,
+				92AF8358240DBBC600F342A0 /* MultiArray.swift in Sources */,
+				92AF835D240DCF5A00F342A0 /* FCRN.mlmodel in Sources */,
+				92AF835E240DCF5A00F342A0 /* DeepLabV3.mlmodel in Sources */,
 				554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */,
-				71B8323322E2B7F900207D05 /* YOLOv3TinyFP16.mlmodel in Sources */,
-				71B8323522E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
-				71B8323422E2B7F900207D05 /* YOLOv3Tiny.mlmodel in Sources */,
-				715E7E6C2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel in Sources */,
 				554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */,
-				71B8322F22E2B0FB00207D05 /* ObjectDetector.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

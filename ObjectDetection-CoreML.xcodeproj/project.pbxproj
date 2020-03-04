@@ -28,6 +28,7 @@
 		BABE3D6C240B804500FBD604 /* bed.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D67240B804400FBD604 /* bed.jpeg */; };
 		BABE3D6D240B804500FBD604 /* chair.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D68240B804400FBD604 /* chair.jpeg */; };
 		BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D69240B804500FBD604 /* desk.jpeg */; };
+		E279E56024103F4600C66C01 /* trash.png in Resources */ = {isa = PBXBuildFile; fileRef = E279E55F24103F4500C66C01 /* trash.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		BABE3D67240B804400FBD604 /* bed.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = bed.jpeg; path = "icon pics/bed.jpeg"; sourceTree = "<group>"; };
 		BABE3D68240B804400FBD604 /* chair.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = chair.jpeg; path = "icon pics/chair.jpeg"; sourceTree = "<group>"; };
 		BABE3D69240B804500FBD604 /* desk.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = desk.jpeg; path = "icon pics/desk.jpeg"; sourceTree = "<group>"; };
+		E279E55F24103F4500C66C01 /* trash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = trash.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,7 @@
 				BABE3D67240B804400FBD604 /* bed.jpeg */,
 				BABE3D68240B804400FBD604 /* chair.jpeg */,
 				BABE3D65240B804200FBD604 /* cup.jpeg */,
+				E279E55F24103F4500C66C01 /* trash.png */,
 				BABE3D69240B804500FBD604 /* desk.jpeg */,
 				BABE3D66240B804300FBD604 /* sofa.jpg */,
 				BA4639A8240B786F00A17F36 /* furniture pics */,
@@ -197,6 +200,7 @@
 			files = (
 				BABE3D6B240B804500FBD604 /* sofa.jpg in Resources */,
 				BABE3D6A240B804500FBD604 /* cup.jpeg in Resources */,
+				E279E56024103F4600C66C01 /* trash.png in Resources */,
 				BA0E9DCB23FCC38C00058180 /* 3D Objects in Resources */,
 				554F14A6220362AC00B828B0 /* LaunchScreen.storyboard in Resources */,
 				BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */,

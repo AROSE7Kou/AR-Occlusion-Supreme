@@ -43,6 +43,7 @@ class ViewController: UIViewController , ARSCNViewDelegate{
     var hStack: UIStackView! = UIStackView()
     var furniture1:UIButton! = UIButton()
     var furniture2:UIButton! = UIButton()
+    var trash:UIImageView! = UIImageView()
     var detail1: UIView! = UIView()
     var detail2: UIView! = UIView()
     var info1: UITextView! = UITextView()
@@ -121,8 +122,13 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         detail2.backgroundColor = UIColor.detail
         detail2.frame = CGRect(x:207, y:275, width: 207, height: 400)
         
+        trash.image = UIImage(imageLiteralResourceName: "trash.png")
+        trash.frame = CGRect(x:310, y:10, width: 80, height: 80)
+        trash.backgroundColor = UIColor.clear
+        
         sceneView.addSubview(detail1)
         sceneView.addSubview(detail2)
+        sceneView.addSubview(trash)
         
         detail1.isHidden = true
         detail2.isHidden = true
@@ -231,6 +237,12 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                     debugPrint("AHHHHHHHHH")
                 case .changed:
                     let location = panGesture.location(in: sceneView)
+                    if ((location.x > 350) && (location.y<80)){
+                        draggingNode?.removeFromParentNode()
+                        return
+                    }
+                    debugPrint(location)
+                    
                     guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {return}
                     let translation = hitTestResult.worldTransform.translation
                     let x = translation.x

@@ -236,6 +236,7 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                     draggingNode = hitNodeResult.node
                     if (draggingNode?.name != "furniture") {
                         draggingNode = nil
+                        debugPrint("ABCDE")
                         return
                     }
                     debugPrint("AHHHHHHHHH")
@@ -247,7 +248,10 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                     }
                     //debugPrint(location)
                     
-                    guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {return}
+                    guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {
+                        debugPrint("No Plane")
+                        return
+                    }
                     let translation = hitTestResult.worldTransform.translation
                     let x = translation.x
                     let y = translation.y
@@ -377,8 +381,7 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
         else {debugPrint("NO MODEL!")
             return }
-
-        shipNode.position = SCNVector3(0,0,-3)
+        shipNode.position = SCNVector3(0,0,-1)
         shipNode.renderingOrder = -200
 
         sceneView.pointOfView?.addChildNode(shipNode)
@@ -602,11 +605,11 @@ extension float4x4 {
 
 extension UIColor {
     open class var transparentLightBlue: UIColor {
-        return UIColor(red: 90/255, green: 200/255, blue: 250/255, alpha: 0.60)
+        return UIColor(red: 90/255, green: 200/255, blue: 250/255, alpha: 0.30)
     }
     
     open class var idkColor: UIColor {
-        return UIColor(white: 0.0, alpha: 0.3)
+        return UIColor(white: 0.0, alpha: 0.8)
     }
     
     open class var detail: UIColor {

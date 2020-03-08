@@ -37,7 +37,7 @@
                                                     <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="P9Z-CA-SKy"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hU5-QP-xan" userLabel="Bed">
+                                            <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hU5-QP-xan" userLabel="Bed">
                                                 <rect key="frame" x="80" y="0.0" width="80" height="40"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="40" id="BpY-iV-vCH"/>
@@ -49,7 +49,7 @@
                                                     <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jl8-sm-Peg"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VBV-SS-2IP" userLabel="Cup">
+                                            <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VBV-SS-2IP" userLabel="Cup">
                                                 <rect key="frame" x="160" y="0.0" width="80" height="40"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="80" id="RFC-5s-Hgd"/>
@@ -61,7 +61,7 @@
                                                     <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Zi1-oR-J63"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gmc-V6-04P" userLabel="Chair">
+                                            <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gmc-V6-04P" userLabel="Chair">
                                                 <rect key="frame" x="240" y="0.0" width="80" height="40"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="40" id="7Xl-4h-f4T"/>
@@ -73,7 +73,7 @@
                                                     <action selector="showFurnitures:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fyj-gJ-fO8"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iFb-vk-tt9" userLabel="Sofa">
+                                            <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iFb-vk-tt9" userLabel="Sofa">
                                                 <rect key="frame" x="320" y="0.0" width="80" height="40"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="80" id="KO9-iD-SMK"/>

@@ -48,7 +48,8 @@ class ViewController: UIViewController , ARSCNViewDelegate{
     var detail2: UIView! = UIView()
     var info1: UITextView! = UITextView()
     var info2: UITextView! = UITextView()
-    
+    var infoindex = 0
+    let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup0.scn", "3D Objects/cup1.scn", "3D Objects/chair0.scn", "3D Objects/ship.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
     // MARK: - TableView Data
     var predictions: [VNRecognizedObjectObservation] = []
     
@@ -108,12 +109,12 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         
         furniture1.addTarget(self, action: #selector(fuck(sender:)), for: .touchDown)
         furniture1.addTarget(self, action: #selector(fuckme(sender:)), for: .touchUpInside)
-        furniture1.addTarget(self, action: #selector(fuckme(sender:)), for: .touchDragInside)
+        furniture1.addTarget(self, action: #selector(realfuckme(sender:)), for: .touchDownRepeat)
         furniture1.tag = 1
         
         furniture2.addTarget(self, action: #selector(fuck(sender:)), for: .touchDown)
         furniture2.addTarget(self, action: #selector(fuckme(sender:)), for: .touchUpInside)
-        furniture2.addTarget(self, action: #selector(fuckme(sender:)), for: .touchDragInside)
+        furniture2.addTarget(self, action: #selector(realfuckme(sender:)), for: .touchDownRepeat)
         furniture2.tag = 2
         
         detail1.backgroundColor = UIColor.detail
@@ -139,6 +140,9 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         info2.backgroundColor = UIColor.detail
         info1.text = "This is 1.\n This should be the second line"
         info2.text = "This is 2.\n This should be the second line"
+        info1.tag = 0
+        info2.tag = 1
+        
         detail1.addSubview(info1)
         detail2.addSubview(info2)
     }
@@ -205,15 +209,15 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         let tapLocation = recognizer.location(in: sceneView)
         let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
         
-        debugPrint("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
+        //debugPrint("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
 
                 guard let hitTestResult = hitTestResults.first else { return }
                 let translation = hitTestResult.worldTransform.translation
                 let x = translation.x
                 let y = translation.y
                 let z = translation.z
-                let shipScene = SCNScene(named: "3D Objects/ship.scn")
-                guard let shipNode = shipScene?.rootNode.childNode(withName: "ship", recursively: false)
+                let shipScene = SCNScene(named: models[infoindex])
+                guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
                     else {debugPrint("NO MODEL!")
                         return }
                 shipNode.position = SCNVector3(x,y,z)
@@ -230,7 +234,7 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                 case .began:
                     guard let hitNodeResult = sceneView.hitTest(location, options: nil).first else{return}
                     draggingNode = hitNodeResult.node
-                    if (draggingNode?.name != "ship") {
+                    if (draggingNode?.name != "furniture") {
                         draggingNode = nil
                         return
                     }
@@ -241,7 +245,7 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                         draggingNode?.removeFromParentNode()
                         return
                     }
-                    debugPrint(location)
+                    //debugPrint(location)
                     
                     guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {return}
                     let translation = hitTestResult.worldTransform.translation
@@ -261,14 +265,14 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         func addTapGestureToSceneView() {
             let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.addShipToSceneView(withGestureRecognizer:)))
             sceneView.addGestureRecognizer(tapGestureRecognizer)
-            debugPrint("Knock Knock")
+            //debugPrint("Knock Knock")
         }
     
         func addPanGestureToSceneView() {
             let panGestureRecognizer = UIPanGestureRecognizer(target: self, action:
                 #selector(ViewController.dragModelInSceneView(panGesture:)))
             sceneView.addGestureRecognizer(panGestureRecognizer)
-            debugPrint("Pan is Ready to Burn")
+            //debugPrint("Pan is Ready to Burn")
     }
     
     @IBAction func showFurnitures(_ sender: UIButton) {
@@ -284,21 +288,28 @@ class ViewController: UIViewController , ARSCNViewDelegate{
             typeButton = 5
         }
         else {
+            infoindex = sender.tag
+            //var text = infoarray[infoindex]
+        
             // Set image first
             switch sender.tag {
             case 0:
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/table1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/table2.png")
-            case 1:
+            case 2:
+                
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/bed1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/bed2.png")
-            case 2:
+            case 4:
+                //infoindex = 4
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/cup1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/cup2.png")
-            case 3:
+            case 6:
+                //infoindex = 6
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/chair1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/chair2.png")
-            case 4:
+            case 8:
+                //infoindex = 8
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/sofa1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/sofa2.png")
             default:
@@ -331,12 +342,19 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         }
     }
     
+    var infoarray = infospill()
+    
+    @objc func Modelpop(sender : UIButton){
+        
+    }
     @objc func fuck(sender : UIButton) {
         if (sender.tag == 1) {
             detail1.isHidden = false
+            info1.text = infoarray[infoindex]
         }
         else if (sender.tag == 2) {
             detail2.isHidden = false
+            info2.text = infoarray[infoindex+1]
         }
     }
     
@@ -348,6 +366,23 @@ class ViewController: UIViewController , ARSCNViewDelegate{
             detail2.isHidden = true
         }
 //        detail1.removeFromSuperview()
+    }
+    
+    @objc func realfuckme(sender : UIButton){
+        debugPrint("AAAASSSS")
+        
+        var a = models[infoindex+sender.tag-1]
+        debugPrint(a)
+        let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
+        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+        else {debugPrint("NO MODEL!")
+            return }
+
+        shipNode.position = SCNVector3(0,0,-3)
+        shipNode.renderingOrder = -200
+
+        sceneView.pointOfView?.addChildNode(shipNode)
+//        sceneView.scene.rootNode.addChildNode(shipNode)
     }
 }
 

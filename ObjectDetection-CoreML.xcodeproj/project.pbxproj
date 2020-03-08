@@ -29,6 +29,7 @@
 		BABE3D6D240B804500FBD604 /* chair.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D68240B804400FBD604 /* chair.jpeg */; };
 		BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D69240B804500FBD604 /* desk.jpeg */; };
 		E279E56024103F4600C66C01 /* trash.png in Resources */ = {isa = PBXBuildFile; fileRef = E279E55F24103F4500C66C01 /* trash.png */; };
+		E279E56224104C9500C66C01 /* Information.swift in Sources */ = {isa = PBXBuildFile; fileRef = E279E56124104C9500C66C01 /* Information.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		BABE3D68240B804400FBD604 /* chair.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = chair.jpeg; path = "icon pics/chair.jpeg"; sourceTree = "<group>"; };
 		BABE3D69240B804500FBD604 /* desk.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = desk.jpeg; path = "icon pics/desk.jpeg"; sourceTree = "<group>"; };
 		E279E55F24103F4500C66C01 /* trash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = trash.png; sourceTree = "<group>"; };
+		E279E56124104C9500C66C01 /* Information.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Information.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 				554F149F220362AB00B828B0 /* Main.storyboard */,
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
 				554F149D220362AB00B828B0 /* ViewController.swift */,
+				E279E56124104C9500C66C01 /* Information.swift */,
 				558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */,
 				71B8322322E2B0BC00207D05 /* ultils */,
 				71B8322222E2B0B200207D05 /* mlmodel */,
@@ -220,6 +223,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E279E56224104C9500C66C01 /* Information.swift in Sources */,
 				554F149E220362AB00B828B0 /* ViewController.swift in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */,

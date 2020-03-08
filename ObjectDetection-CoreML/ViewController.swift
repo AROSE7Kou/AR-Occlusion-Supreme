@@ -37,6 +37,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     let semaphore = DispatchSemaphore(value: 1)
     var lastExecution = Date()
     let planesRootNode = SCNNode()
+    var hitNodeResults: [SCNHitTestResult?] = []
     var draggingNode: SCNNode?
     
     // MARK: - Button Controller
@@ -44,10 +45,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     var hStack: UIStackView! = UIStackView()
     var furniture1:UIButton! = UIButton()
     var furniture2:UIButton! = UIButton()
+    var trash: UIImageView! = UIImageView()
     var detail1: UIView! = UIView()
     var detail2: UIView! = UIView()
     var info1: UITextView! = UITextView()
     var info2: UITextView! = UITextView()
+    var infoindex = 0
+    var infoarray = infospill()
+    let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup0.scn", "3D Objects/cup1.scn", "3D Objects/chair1.scn", "3D Objects/ship.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
     
     // MARK - Performance Measurement Property
     //private let 👨‍🔧 = 📏()
@@ -64,9 +69,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         sceneView.showsStatistics = true
         
         let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
+//        let vaseScene = SCNScene(named:"3D Objects/chair1.scn")
         guard let ironManNode =  vaseScene?.rootNode else { return }
-        ironManNode.name = "ironMan"
-        ironManNode.position = SCNVector3(0, -0.3, -1)
+        ironManNode.name = "IronMan"
+        ironManNode.worldPosition = SCNVector3(0, -0.3, -1)
+//        ironManNode.scale = SCNVector3(0.1,0.1,0.1)
         
         sceneView.scene.rootNode.addChildNode(ironManNode)
         
@@ -100,12 +107,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         
         furniture1.addTarget(self, action: #selector(fuck(sender:)), for: .touchDown)
         furniture1.addTarget(self, action: #selector(fuckme(sender:)), for: .touchUpInside)
-        furniture1.addTarget(self, action: #selector(fuckme(sender:)), for: .touchDragInside)
+        furniture1.addTarget(self, action: #selector(realfuckme(sender:)), for: .touchDownRepeat)
         furniture1.tag = 1
         
         furniture2.addTarget(self, action: #selector(fuck(sender:)), for: .touchDown)
         furniture2.addTarget(self, action: #selector(fuckme(sender:)), for: .touchUpInside)
-        furniture2.addTarget(self, action: #selector(fuckme(sender:)), for: .touchDragInside)
+        furniture2.addTarget(self, action: #selector(realfuckme(sender:)), for: .touchDownRepeat)
         furniture2.tag = 2
         
         detail1.backgroundColor = UIColor.detail
@@ -114,8 +121,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         detail2.backgroundColor = UIColor.detail
         detail2.frame = CGRect(x:207, y:275, width: 207, height: 400)
         
+        trash.image = UIImage(imageLiteralResourceName: "trash.png")
+        trash.frame = CGRect(x:310, y:10, width: 80, height: 80)
+        trash.backgroundColor = UIColor.clear
+        
+        
         sceneView.addSubview(detail1)
         sceneView.addSubview(detail2)
+        sceneView.addSubview(trash)
         
         detail1.isHidden = true
         detail2.isHidden = true
@@ -155,7 +168,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             currentBuffer = frame.capturedImage
             
             // Calculate depth
-            let position = sceneView.scene.rootNode.childNode(withName: "ironMan", recursively: true)!.position
+            guard let position = sceneView.scene.rootNode.childNode(withName: "furniture", recursively: true)?.position else{
+                self.ReleaseBuffer()
+                return}
             let virtualCoord = simd_float4(position.x, position.y, position.z, 1)
             let result = frame.camera.transform.inverse * virtualCoord
             depthThreshold = -result.z
@@ -192,8 +207,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         maskNode = SCNNode(geometry: rectangleDepth)
         maskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
         maskNode?.position = SCNVector3Make(0, 0, -0.05)
-        maskNode.renderingOrder = -1
-        
+        maskNode.renderingOrder = -2
+        maskNode.name = "mask"
         sceneView.pointOfView?.presentation.addChildNode(maskNode!)
     }
     
@@ -208,12 +223,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         let x = translation.x
         let y = translation.y
         let z = translation.z
-        let shipScene = SCNScene(named: "3D Objects/ship.scn")
-        guard let shipNode = shipScene?.rootNode.childNode(withName: "ship", recursively: false)
+        let shipScene = SCNScene(named: "3D Objects/chair1.scn")
+        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
+        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
             else {debugPrint("NO MODEL!")
                 return }
-        shipNode.position = SCNVector3(x,y,z)
-        shipNode.renderingOrder = -200
+//        guard let shipNode = shipScene?.rootNode else {return}
+//        shipNode.scale = SCNVector3(0.1, 0.1, 0.1)
+        shipNode.worldPosition = SCNVector3(x,y,z)
+        shipNode.renderingOrder = -1
 
         sceneView.scene.rootNode.addChildNode(shipNode)
 
@@ -224,15 +242,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         let location = panGesture.location(in: sceneView)
         switch panGesture.state {
             case .began:
-                guard let hitNodeResult = sceneView.hitTest(location, options: nil).first else{return}
+                debugPrint("BEGAN")
+                guard let hitNodeResult = sceneView.hitTest(location, options: [SCNHitTestOption.searchMode: 1]).first(where: {$0.node.name == "furniture"}) else{return}
                 draggingNode = hitNodeResult.node
-                if (draggingNode?.name != "ship") {
-                    draggingNode = nil
-                    return
-                }
-                debugPrint("AHHHHHHHHH")
+
+                debugPrint("GOTCHA")
+            
             case .changed:
                 let location = panGesture.location(in: sceneView)
+                if (location.x > 310 && location.y < 90){
+                    draggingNode?.removeFromParentNode()
+                    return
+                }
                 guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {return}
                 let translation = hitTestResult.worldTransform.translation
                 let x = translation.x
@@ -296,6 +317,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             }
             
             typeButton = sender.tag
+            infoindex = sender.tag
             // Set up stack and buttons
             hStack = {
                 let stack = UIStackView()
@@ -334,9 +356,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     @objc func fuck(sender : UIButton) {
         if (sender.tag == 1) {
             detail1.isHidden = false
+            info1.text = infoarray[infoindex]
         }
         else if (sender.tag == 2) {
             detail2.isHidden = false
+            info2.text = infoarray[infoindex+1]
         }
     }
     
@@ -349,6 +373,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         }
 //        detail1.removeFromSuperview()
     }
+    
+    @objc func realfuckme(sender : UIButton){
+            debugPrint("AAAASSSS")
+            
+//            var a = models[infoindex+sender.tag-1]
+//            debugPrint(a)
+            let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
+            guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+            else {debugPrint("NO MODEL!")
+                return }
+
+            shipNode.position = SCNVector3(0,0,-3)
+            shipNode.renderingOrder = -1
+
+            sceneView.pointOfView?.addChildNode(shipNode)
+    //        sceneView.scene.rootNode.addChildNode(shipNode)
+        }
 }
 
 extension UIStackView{
@@ -390,7 +431,7 @@ extension ViewController {
                 guard let array = segmentationOutput.multiArrayValue else {
                     return
                 }
-                print(array.shape)
+                //print(array.shape)
                 segmentationMap = array
                 
                 guard let buffer = currentBuffer else { return }
@@ -426,10 +467,10 @@ extension ViewController {
                 guard let newArray = array.to2DArray() else {
                     return
                 }
-                print(newArray.shape)
+                //print(newArray.shape)
                 depthMap = newArray
                 
-                print(Double(self.depthThreshold) + 0.3)
+                //print(Double(self.depthThreshold) + 0.3)
                 let CGimage = MLMultiArray.buildFromSegmentationDepth(segmentationMap: self.segmentationMap!, depthMap: self.depthMap!, threshold: Double(self.depthThreshold) + 0.3)
                 
 //                let CGimage = newArray.cgImage(min: 0.5, max: 6)
@@ -468,7 +509,7 @@ extension ViewController {
         
         // 4
         let planeNode = SCNNode(geometry: plane)
-        planeNode.renderingOrder = -300
+        planeNode.renderingOrder = -1
         
         // 5
         let x = CGFloat(planeAnchor.center.x)

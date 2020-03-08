@@ -2,12 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../ObjectDetection-CoreML/furniture pics">
-   </FileRef>
-   <FileRef
-      location = "group:../ObjectDetection-CoreML/icon pics">
-   </FileRef>
-   <FileRef
       location = "self:">
    </FileRef>
 </Workspace>

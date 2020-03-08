@@ -18,7 +18,6 @@
 		558918EF22089FFE00F182BA /* Measure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558918EE22089FFE00F182BA /* Measure.swift */; };
 		92AF8358240DBBC600F342A0 /* MultiArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AF8357240DBBC600F342A0 /* MultiArray.swift */; };
 		92AF835A240DC96A00F342A0 /* CGImage+RawBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AF8359240DC96A00F342A0 /* CGImage+RawBytes.swift */; };
-		92AF835D240DCF5A00F342A0 /* FCRN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 92AF835B240DCF5A00F342A0 /* FCRN.mlmodel */; };
 		92AF835E240DCF5A00F342A0 /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 92AF835C240DCF5A00F342A0 /* DeepLabV3.mlmodel */; };
 		BA0E9DCB23FCC38C00058180 /* 3D Objects in Resources */ = {isa = PBXBuildFile; fileRef = BA0E9DCA23FCC38C00058180 /* 3D Objects */; };
 		BA4639AA240B787000A17F36 /* furniture pics in Resources */ = {isa = PBXBuildFile; fileRef = BA4639A8240B786F00A17F36 /* furniture pics */; };
@@ -27,6 +26,9 @@
 		BABE3D6C240B804500FBD604 /* bed.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D67240B804400FBD604 /* bed.jpeg */; };
 		BABE3D6D240B804500FBD604 /* chair.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D68240B804400FBD604 /* chair.jpeg */; };
 		BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D69240B804500FBD604 /* desk.jpeg */; };
+		BAEDBC1F2410424B00028501 /* trash.png in Resources */ = {isa = PBXBuildFile; fileRef = BAEDBC1E2410424B00028501 /* trash.png */; };
+		BAEDBC212410527600028501 /* FCRN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = BAEDBC202410527600028501 /* FCRN.mlmodel */; };
+		BAF65C5524157BAE00B783BB /* Information.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF65C5424157BAE00B783BB /* Information.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,7 +45,6 @@
 		558918EE22089FFE00F182BA /* Measure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Measure.swift; sourceTree = "<group>"; };
 		92AF8357240DBBC600F342A0 /* MultiArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiArray.swift; sourceTree = "<group>"; };
 		92AF8359240DC96A00F342A0 /* CGImage+RawBytes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+RawBytes.swift"; sourceTree = "<group>"; };
-		92AF835B240DCF5A00F342A0 /* FCRN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = FCRN.mlmodel; sourceTree = "<group>"; };
 		92AF835C240DCF5A00F342A0 /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = DeepLabV3.mlmodel; sourceTree = "<group>"; };
 		BA0E9DCA23FCC38C00058180 /* 3D Objects */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "3D Objects"; sourceTree = "<group>"; };
 		BA4639A8240B786F00A17F36 /* furniture pics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "furniture pics"; sourceTree = "<group>"; };
@@ -52,6 +53,9 @@
 		BABE3D67240B804400FBD604 /* bed.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = bed.jpeg; path = "icon pics/bed.jpeg"; sourceTree = "<group>"; };
 		BABE3D68240B804400FBD604 /* chair.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = chair.jpeg; path = "icon pics/chair.jpeg"; sourceTree = "<group>"; };
 		BABE3D69240B804500FBD604 /* desk.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = desk.jpeg; path = "icon pics/desk.jpeg"; sourceTree = "<group>"; };
+		BAEDBC1E2410424B00028501 /* trash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = trash.png; sourceTree = "<group>"; };
+		BAEDBC202410527600028501 /* FCRN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = FCRN.mlmodel; sourceTree = "<group>"; };
+		BAF65C5424157BAE00B783BB /* Information.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Information.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +88,7 @@
 		554F149A220362AB00B828B0 /* ObjectDetection-CoreML */ = {
 			isa = PBXGroup;
 			children = (
+				BAEDBC1E2410424B00028501 /* trash.png */,
 				BABE3D67240B804400FBD604 /* bed.jpeg */,
 				BABE3D68240B804400FBD604 /* chair.jpeg */,
 				BABE3D65240B804200FBD604 /* cup.jpeg */,
@@ -95,6 +100,7 @@
 				554F149F220362AB00B828B0 /* Main.storyboard */,
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
 				554F149D220362AB00B828B0 /* ViewController.swift */,
+				BAF65C5424157BAE00B783BB /* Information.swift */,
 				92AF8357240DBBC600F342A0 /* MultiArray.swift */,
 				92AF8359240DC96A00F342A0 /* CGImage+RawBytes.swift */,
 				558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */,
@@ -110,8 +116,8 @@
 		71B8322222E2B0B200207D05 /* mlmodel */ = {
 			isa = PBXGroup;
 			children = (
+				BAEDBC202410527600028501 /* FCRN.mlmodel */,
 				92AF835C240DCF5A00F342A0 /* DeepLabV3.mlmodel */,
-				92AF835B240DCF5A00F342A0 /* FCRN.mlmodel */,
 			);
 			path = mlmodel;
 			sourceTree = "<group>";
@@ -186,6 +192,7 @@
 			files = (
 				BABE3D6B240B804500FBD604 /* sofa.jpg in Resources */,
 				BABE3D6A240B804500FBD604 /* cup.jpeg in Resources */,
+				BAEDBC1F2410424B00028501 /* trash.png in Resources */,
 				BA0E9DCB23FCC38C00058180 /* 3D Objects in Resources */,
 				554F14A6220362AC00B828B0 /* LaunchScreen.storyboard in Resources */,
 				BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */,
@@ -206,13 +213,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				554F149E220362AB00B828B0 /* ViewController.swift in Sources */,
+				BAEDBC212410527600028501 /* FCRN.mlmodel in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */,
 				92AF835A240DC96A00F342A0 /* CGImage+RawBytes.swift in Sources */,
 				92AF8358240DBBC600F342A0 /* MultiArray.swift in Sources */,
-				92AF835D240DCF5A00F342A0 /* FCRN.mlmodel in Sources */,
 				92AF835E240DCF5A00F342A0 /* DeepLabV3.mlmodel in Sources */,
 				554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */,
+				BAF65C5524157BAE00B783BB /* Information.swift in Sources */,
 				554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

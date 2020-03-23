@@ -566,5 +566,24 @@ extension UIColor {
     }
 }
 
+extension SCNNode {
+    var myUID: NSNumber {
+        get {
+            return self.myUID
+        }
+        set(newValue) {
+            self.myUID = newValue
+        }
+    }
+    
+    var myDepth: NSNumber {
+        get {
+            return self.myDepth
+        }
+        set(newValue) {
+            self.myDepth = newValue
+        }
+    }
+}
 
 

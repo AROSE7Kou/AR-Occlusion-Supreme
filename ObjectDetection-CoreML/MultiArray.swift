@@ -558,6 +558,72 @@ extension MLMultiArray {
   func floatValue(data: Data) -> Float {
       return Float(bitPattern: UInt32(bigEndian: data.withUnsafeBytes { $0.load(as: UInt32.self) }))
   }
+    
+    
+  public static func getSegmentDepthDict(segmentationMap: MLMultiArray,
+                                     depthMap: MLMultiArray) -> [Int32: Double]? {
+    
+    var dictDepthSum: [Int32: Double] = [:]
+    var dictDepthCount: [Int32: Double] = [:]
+    var dictSegmentDepth: [Int32: Double] = [:]
+    
+    let ptrSegmentation = UnsafeMutablePointer<Int32>(OpaquePointer(segmentationMap.dataPointer))
+    let ptrDepth = UnsafeMutablePointer<Double>(OpaquePointer(depthMap.dataPointer))
+    
+    let height = 128
+    let width = 98
+    let yStrideSeg = segmentationMap.strides[0].intValue
+    let xStrideSeg = segmentationMap.strides[1].intValue
+    let yStrideDepth = depthMap.strides[0].intValue
+    let xStrideDepth = depthMap.strides[1].intValue
+    
+    // One-pass to get segmentation class and depth
+    for y in 0..<height {
+      for x in 0..<width {
+        let segClass = ptrSegmentation[(4*y)*yStrideSeg + (60+4*x)*xStrideSeg]
+        if segClass != 0 {
+          let depth = ptrDepth[y*yStrideDepth + (35+x)*xStrideDepth]
+          if dictDepthSum[segClass] != nil {
+            dictDepthSum[segClass]! += depth
+            dictDepthCount[segClass]! += 1
+          } else {
+            dictDepthSum[segClass] = depth
+            dictDepthCount[segClass] = 1
+          }
+        }
+      }
+    }
+    
+    // Calculate average
+    for key in dictDepthSum.keys {
+      dictSegmentDepth[key] = dictDepthSum[key]! / dictDepthCount[key]!
+    }
+    return dictSegmentDepth
+  }
+    
+  public static func buildFromSegID(segmentationMap: MLMultiArray,
+                                  segIDArray: [Int32]) -> CGImage? {
+    let height = 128
+    let width = 98
+    let yStrideSeg = segmentationMap.strides[0].intValue
+    let xStrideSeg = segmentationMap.strides[1].intValue
+    let bytesPerPixel = 4
+    
+    let ptrSegmentation = UnsafeMutablePointer<Int32>(OpaquePointer(segmentationMap.dataPointer))
+    
+    let count = height * width * bytesPerPixel
+    var pixels = [UInt8](repeating: 0, count: count)
+    for y in 0..<height {
+      for x in 0..<width {
+        let segClass = ptrSegmentation[(4*y)*yStrideSeg + (60+4*x)*xStrideSeg]
+        if segIDArray.contains(segClass) {
+          pixels[(y*width + x)*bytesPerPixel] = 255
+          pixels[(y*width + x)*bytesPerPixel + 3] = 255
+        }
+      }
+    }
+    return CGImage.fromByteArrayRGBA(pixels, width: width, height: height)
+  }
 
 
   public static func buildFromSegmentationDepth(segmentationMap: MLMultiArray,
@@ -617,6 +683,7 @@ extension MLMultiArray {
     }
     return CGImage.fromByteArrayRGBA(pixels, width: width, height: height)
   }
+
 }
 
 

@@ -560,12 +560,12 @@ extension MLMultiArray {
   }
     
     
-  public static func getSegmentDepthDict(segmentationMap: MLMultiArray,
-                                     depthMap: MLMultiArray) -> [Int32: Double]? {
+  public static func getSegmentDepthTuple(segmentationMap: MLMultiArray,
+                                     depthMap: MLMultiArray) -> [(Int32, Double)]? {
     
     var dictDepthSum: [Int32: Double] = [:]
     var dictDepthCount: [Int32: Double] = [:]
-    var dictSegmentDepth: [Int32: Double] = [:]
+    var tupleSegmentDepth: [(Int32, Double)] = []
     
     let ptrSegmentation = UnsafeMutablePointer<Int32>(OpaquePointer(segmentationMap.dataPointer))
     let ptrDepth = UnsafeMutablePointer<Double>(OpaquePointer(depthMap.dataPointer))
@@ -596,9 +596,9 @@ extension MLMultiArray {
     
     // Calculate average
     for key in dictDepthSum.keys {
-      dictSegmentDepth[key] = dictDepthSum[key]! / dictDepthCount[key]!
+        tupleSegmentDepth.append((key, dictDepthSum[key]! / dictDepthCount[key]!))
     }
-    return dictSegmentDepth
+    return tupleSegmentDepth
   }
     
   public static func buildFromSegID(segmentationMap: MLMultiArray,

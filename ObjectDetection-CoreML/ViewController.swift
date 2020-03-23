@@ -52,7 +52,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     var info2: UITextView! = UITextView()
     var infoindex = 0
     var infoarray = infospill()
-    let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup0.scn", "3D Objects/cup1.scn", "3D Objects/chair1.scn", "3D Objects/ship.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
+    let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup1/cup1.scn", "3D Objects/cup2/cup2.scn", "3D Objects/chair1/chair1.scn", "3D Objects/chair2/chair2.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
     
     // MARK - Performance Measurement Property
     //private let 👨‍🔧 = 📏()
@@ -68,14 +68,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         
         sceneView.showsStatistics = true
         
-        let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
-//        let vaseScene = SCNScene(named:"3D Objects/chair1.scn")
-        guard let ironManNode =  vaseScene?.rootNode else { return }
-        ironManNode.name = "IronMan"
-        ironManNode.worldPosition = SCNVector3(0, -0.3, -1)
-//        ironManNode.scale = SCNVector3(0.1,0.1,0.1)
-        
-        sceneView.scene.rootNode.addChildNode(ironManNode)
+//        let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
+////        let vaseScene = SCNScene(named:"3D Objects/chair1.scn")
+//        guard let ironManNode =  vaseScene?.rootNode else { return }
+//        ironManNode.name = "IronMan"
+//        ironManNode.worldPosition = SCNVector3(0, -0.3, -1)
+////        ironManNode.scale = SCNVector3(0.1,0.1,0.1)
+//
+//        sceneView.scene.rootNode.addChildNode(ironManNode)
         
 
 //      Enable Default Lighting - makes the 3D text a bit poppier.
@@ -224,7 +224,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         let y = translation.y
         let z = translation.z
         let shipScene = SCNScene(named: "3D Objects/chair1.scn")
-        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
+//        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
         guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
             else {debugPrint("NO MODEL!")
                 return }
@@ -261,7 +261,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
                 let z = translation.z
                 draggingNode?.position = SCNVector3(x,y,z)
                 
-//                    draggingNode?.look(at: <#T##SCNVector3#>)
+//                    draggingNode?.look(at: )
             case .ended:
                 draggingNode = nil
             default:
@@ -300,16 +300,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             case 0:
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/table1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/table2.png")
-            case 1:
+            case 2:
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/bed1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/bed2.png")
-            case 2:
+            case 4:
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/cup1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/cup2.png")
-            case 3:
+            case 6:
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/chair1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/chair2.png")
-            case 4:
+            case 8:
                 image1 = UIImage(imageLiteralResourceName: "furniture pics/sofa1.png")
                 image2 = UIImage(imageLiteralResourceName: "furniture pics/sofa2.png")
             default:
@@ -380,15 +380,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 //            var a = models[infoindex+sender.tag-1]
 //            debugPrint(a)
             let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
+            shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
             guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
             else {debugPrint("NO MODEL!")
                 return }
-
+            shipNode.eulerAngles = SCNVector3(90,0,0)
             shipNode.position = SCNVector3(0,0,-3)
             shipNode.renderingOrder = -1
 
-            sceneView.pointOfView?.addChildNode(shipNode)
-    //        sceneView.scene.rootNode.addChildNode(shipNode)
+//            sceneView.pointOfView?.addChildNode(shipNode)
+            sceneView.scene.rootNode.addChildNode(shipNode)
         }
 }
 

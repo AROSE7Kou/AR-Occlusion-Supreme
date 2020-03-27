@@ -23,6 +23,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     var maskNode : SCNNode!
     var maskNodes = Array(repeating: SCNNode(), count: max_segmentation_count)
     var maskMaterial : SCNMaterial!
+    var id: Int32 = 40
+    var registeredModels: [Int32 : SCNNode] = [:]
     
     // MARK: - Vision Requests
     var currentBuffer: CVPixelBuffer?
@@ -235,22 +237,62 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         }
     }
     
+    func isVirtualID(id: Int32) -> Bool {
+        return id > 40;
+    }
+    
     // Update the bilbords based on the sorted array
     func bilbordUpdate() {
         let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
-        let CGimage = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: [0])
-        self.maskMaterial.diffuse.contents = CGimage
-        rectangleDepth.materials = [self.maskMaterial]
-        
-        for i in 0...(max_segmentation_count - 1) {
-            modifyMaskNode(index: i, renderingOrder: -1, geometry: rectangleDepth)
+        let allTuples: [(Int32, Double)] = depthSort(segMap: MLMultiArray.getSegmentDepthTuple(segmentationMap: segmentationMap!, depthMap: depthMap!)!)
+        var segIDArray: [Int32] = []
+        var renderingOrder = -100
+        var maskIndex = 0
+        for tuple in allTuples {
+            if (!isVirtualID(id: tuple.0)) {
+                segIDArray.append(tuple.0)
+            } else {
+                let CGimage = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: segIDArray)
+                self.maskMaterial.diffuse.contents = CGimage
+                rectangleDepth.materials = [self.maskMaterial]
+                // TODO: reset all mask nodes
+                modifyMaskNode(index: maskIndex, renderingOrder: renderingOrder, geometry: rectangleDepth)
+                segIDArray = []
+                renderingOrder += 1
+                maskIndex += 1
+            }
         }
+        
+//        segIDArray.append()
+//        let CGimage = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: segIDArray)
+//        self.maskMaterial.diffuse.contents = CGimage
+//        rectangleDepth.materials = [self.maskMaterial]
+//
+//        for i in 0...(max_segmentation_count - 1) {
+//            modifyMaskNode(index: i, renderingOrder: -1, geometry: rectangleDepth)
+//        }
     }
     
     // helper function to modify a single mask node
     func modifyMaskNode(index: Int, renderingOrder: Int, geometry: SCNPlane) {
         maskNodes[index].geometry = geometry
         maskNodes[index].renderingOrder = renderingOrder
+    }
+    
+    func depthSort(segMap:[(Int32, Double)]) -> [(Int32, Double)]{
+        
+        var modelTuples : [(Int32, Double)] = []
+        for i in registeredModels.keys{
+            
+            if let depth = registeredModels[i]?.myDepth.doubleValue {
+               let a : (Int32, Double) = (i, depth)
+               modelTuples.append(a)
+            }
+        
+        }
+        var allTuples = segMap + modelTuples
+        allTuples.sort(by: {$0.1 > $1.1})
+        return allTuples
     }
     
     

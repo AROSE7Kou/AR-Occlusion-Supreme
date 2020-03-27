@@ -13,12 +13,15 @@ import SceneKit.ModelIO
 import Vision
 import CoreMedia
 
+let max_segmentation_count = 21
+
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 
     // MARK: - UI Properties
     @IBOutlet weak var sceneView: ARSCNView!
     
     var maskNode : SCNNode!
+    var maskNodes = Array(repeating: SCNNode(), count: max_segmentation_count)
     var maskMaterial : SCNMaterial!
     
     // MARK: - Vision Requests
@@ -211,6 +214,45 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         maskNode.name = "mask"
         sceneView.pointOfView?.presentation.addChildNode(maskNode!)
     }
+    
+    // New method to create a bunch of bilboards
+    func bilbordsCreate() {
+        maskMaterial = SCNMaterial()
+        maskMaterial.diffuse.contents = UIColor(white: 1, alpha: 0)
+        maskMaterial.colorBufferWriteMask = .alpha
+        
+        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
+        rectangleDepth.materials = [maskMaterial]
+        
+        for i in 0...(max_segmentation_count - 1) {
+            maskNode = SCNNode(geometry: rectangleDepth)
+            maskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
+            maskNode?.position = SCNVector3Make(0, 0, -0.05)
+            maskNode.renderingOrder = -2
+            maskNode.name = "mask" + String(i)
+            maskNodes[i] = maskNode
+            sceneView.pointOfView?.presentation.addChildNode(maskNodes[i])
+        }
+    }
+    
+    // Update the bilbords based on the sorted array
+    func bilbordUpdate() {
+        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
+        let CGimage = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: [0])
+        self.maskMaterial.diffuse.contents = CGimage
+        rectangleDepth.materials = [self.maskMaterial]
+        
+        for i in 0...(max_segmentation_count - 1) {
+            modifyMaskNode(index: i, renderingOrder: -1, geometry: rectangleDepth)
+        }
+    }
+    
+    // helper function to modify a single mask node
+    func modifyMaskNode(index: Int, renderingOrder: Int, geometry: SCNPlane) {
+        maskNodes[index].geometry = geometry
+        maskNodes[index].renderingOrder = renderingOrder
+    }
+    
     
     @objc func addShipToSceneView(withGestureRecognizer recognizer: UIGestureRecognizer) {
         let tapLocation = recognizer.location(in: sceneView)

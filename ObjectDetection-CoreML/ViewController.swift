@@ -8,40 +8,53 @@
 
 import UIKit
 import ARKit
-import Fritz
 import RealityKit
 import SceneKit.ModelIO
 import Vision
 import CoreMedia
 
-class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
+class ViewController: UIViewController , ARSCNViewDelegate{
 
     // MARK: - UI Properties
     @IBOutlet weak var boxesView: DrawingBoundingBoxView!
     @IBOutlet weak var sceneView: ARSCNView!
     
-    let objectDectectionModel = YOLOv3()
-    let depthDetectionModel = DeepLabV3()
-    var planeColor = UIColor.init(hue: 0.5, saturation: 0.5, brightness: 0.5, alpha: 0.5)
-    private lazy var fritzModel = FritzVisionPeopleSegmentationModelFast()
-    var maxPlanesCount = 5
+    let nodeFlag = false
+    let objectDectectionModel = YOLOv3Tiny()
+    //let depthDetectionModel = DeepLabV3FP16()
+    let maxPlanesCount = 5
     var currentPlaneCount = 0
-    let visionQueue = DispatchQueue(label: "com.vision.ARML.visionqueue")
     
     
     // MARK: - Vision Properties
     var request: VNCoreMLRequest?
     var visionModel: VNCoreMLModel?
     var isInferencing = false
-    var currentFrameBuffer: CVPixelBuffer?
     
     // MARK: - AV Property
     var videoCapture: VideoCapture!
+    let semaphore = DispatchSemaphore(value: 1)
+    var lastExecution = Date()
     let planesRootNode = SCNNode()
+    var draggingNode: SCNNode?
     
-    var fritzMaskNode : SCNNode!
-    var fritzMaskMaterial : SCNMaterial!
-    
+    // MARK: - Button Controller
+    var typeButton = -1
+    var hStack: UIStackView! = UIStackView()
+    var furniture1:UIButton! = UIButton()
+    var furniture2:UIButton! = UIButton()
+    var trash:UIImageView! = UIImageView()
+    var detail1: UIView! = UIView()
+    var detail2: UIView! = UIView()
+    var info1: UITextView! = UITextView()
+    var info2: UITextView! = UITextView()
+    var infoindex = 0
+    let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup0.scn", "3D Objects/cup1.scn", "3D Objects/chair0.scn", "3D Objects/ship.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
+    var x1 = 0.0
+    var x2= 0.0
+    var x3 = 0.0
+//    @objc func initialConvert(){
+//    }
     // MARK: - TableView Data
     var predictions: [VNRecognizedObjectObservation] = []
     
@@ -54,62 +67,135 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
     override func viewDidLoad() {
         super.viewDidLoad()
         let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
-        guard let node =  vaseScene?.rootNode else { return }
+        guard let ironmannode =  vaseScene?.rootNode else { return }
+        ironmannode.position = SCNVector3(0,-0.3,-1)
+        
+        
+//        guard let modelScene = SCNScene(mdlAsset: mdlAsset),
+//            let nodeModel =  modelScene.rootNode.childNode(
+//               withName: "vase", recursively: true)
+//        else{
+//            print("fails")
+//            return}
 
         
         sceneView.delegate = self
-        sceneView.session.delegate = self
+//
+//         Show statistics such as fps and timing information
         //sceneView.showsStatistics = true
+//
+//         Create a new scene
+       //let scene = SCNScene()
+//
+//         Set the scene to the view
+        //sceneView.scene = scene
+        sceneView.scene.rootNode.addChildNode(ironmannode)
+        sceneView.scene.rootNode.addChildNode(planesRootNode)
 
-       let scene = SCNScene()
-
-        sceneView.scene = scene
-        sceneView.scene.rootNode.addChildNode(node)
-        //sceneView.scene.rootNode.addChildNode(planesRootNode)
-        sceneView.pointOfView?.presentation.addChildNode(planesRootNode)
-
+//
+//         Enable Default Lighting - makes the 3D text a bit poppier.
+        sceneView.autoenablesDefaultLighting = true
+        addTapGestureToSceneView()
+        addPanGestureToSceneView()
+        // setup the model
         setUpModel()
-        self.bilbordCreate()
-        FritzCore.configure()
         
+        // setup furniture buttons
+        furniture1 = {
+            let button = UIButton()
+            button.frame = CGRect(x:103, y:638, width:207, height:124)
+            return button
+        }()
+        furniture2 = {
+            let button = UIButton()
+            button.frame = CGRect(x:309, y:638, width:207, height:124)
+            return button
+        }()
+        
+        furniture1.addTarget(self, action: #selector(fuck(sender:)), for: .touchDown)
+        furniture1.addTarget(self, action: #selector(fuckme(sender:)), for: .touchUpInside)
+        furniture1.addTarget(self, action: #selector(realfuckme(sender:)), for: .touchDownRepeat)
+        furniture1.tag = 1
+        
+        furniture2.addTarget(self, action: #selector(fuck(sender:)), for: .touchDown)
+        furniture2.addTarget(self, action: #selector(fuckme(sender:)), for: .touchUpInside)
+        furniture2.addTarget(self, action: #selector(realfuckme(sender:)), for: .touchDownRepeat)
+        furniture2.tag = 2
+        
+        detail1.backgroundColor = UIColor.detail
+        detail1.frame = CGRect(x:0, y:275, width: 207, height: 400)
+
+        detail2.backgroundColor = UIColor.detail
+        detail2.frame = CGRect(x:207, y:275, width: 207, height: 400)
+        
+        trash.image = UIImage(imageLiteralResourceName: "trash.png")
+        trash.frame = CGRect(x:310, y:10, width: 80, height: 80)
+        trash.backgroundColor = UIColor.clear
+        
+        sceneView.addSubview(detail1)
+        sceneView.addSubview(detail2)
+        sceneView.addSubview(trash)
+        
+        detail1.isHidden = true
+        detail2.isHidden = true
+        
+        info1.frame = CGRect(x:0,y:0,width:207,height:400)
+        info2.frame = CGRect(x:0, y:0, width:207, height:400)
+        info1.backgroundColor = UIColor.detail
+        info2.backgroundColor = UIColor.detail
+        info1.text = "This is 1.\n This should be the second line"
+        info2.text = "This is 2.\n This should be the second line"
+        info1.tag = 0
+        info2.tag = 1
+        
+        detail1.addSubview(info1)
+        detail2.addSubview(info2)
     }
     
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+    
+        // self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints,ARSCNDebugOptions.showWorldOrigin]
         self.sceneView.session.run(configuration)
+        setUpSceneView()
 
+        self.loopCoreMLUpdate()
+        //self.videoCapture.start()
         
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        //self.videoCapture.stop()
         sceneView.session.pause()
     }
     
-    func session(_ session: ARSession, didUpdate frame: ARFrame) {
-
-        guard currentFrameBuffer == nil, case .normal = frame.camera.trackingState else {
-            return
-        }
-        currentFrameBuffer = frame.capturedImage
-        self.updateCoreML()
+    func setUpSceneView() {
+        let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = .horizontal
+        
+        sceneView.session.run(configuration)
+        
+        sceneView.delegate = self
+        // sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
     }
+    
+    func loopCoreMLUpdate() {
+        // Continuously run CoreML whenever it's ready. (Preventing 'hiccups' in Frame Rate)
+        let delay : Double = 0.2
+        let time = DispatchTime.now() + delay
+        DispatchQueue.main.asyncAfter(deadline:time) {
+            // 1. Run Update.
+            self.updateCoreML()
+            
+            // 2. Loop this function.
+            self.loopCoreMLUpdate()
+        }
         
-    func bilbordCreate() {
-        fritzMaskMaterial = SCNMaterial()
-        fritzMaskMaterial.diffuse.contents = UIColor.white
-        fritzMaskMaterial.colorBufferWriteMask = .alpha
-        
-        let rectangle = SCNPlane(width: 0.0326, height: 0.058)
-        rectangle.materials = [fritzMaskMaterial]
-        
-        fritzMaskNode = SCNNode(geometry: rectangle)
-        fritzMaskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
-        fritzMaskNode?.position = SCNVector3Make(0, 0, -0.05)
-        fritzMaskNode.renderingOrder = -1
-        
-        sceneView.pointOfView?.presentation.addChildNode(fritzMaskNode!)
     }
     
     
@@ -123,118 +209,299 @@ class ViewController: UIViewController , ARSCNViewDelegate, ARSessionDelegate{
             fatalError("fail to create vision model")
         }
     }
+    
+    @objc func addShipToSceneView(withGestureRecognizer recognizer: UIGestureRecognizer) {
+        let tapLocation = recognizer.location(in: sceneView)
+        let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
+        
+        //debugPrint("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
+
+                guard let hitTestResult = hitTestResults.first else { return }
+                let translation = hitTestResult.worldTransform.translation
+                let x = translation.x
+                let y = translation.y
+                let z = translation.z
+                let shipScene = SCNScene(named: models[infoindex])
+                guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+                    else {debugPrint("NO MODEL!")
+                        return }
+                shipNode.position = SCNVector3(x,y,z)
+                shipNode.scale = SCNVector3(x1,x2,x3)
+
+                shipNode.renderingOrder = -200
+
+                sceneView.scene.rootNode.addChildNode(shipNode)
+        
+                debugPrint("Fuck UUUUUUUUUUUUU")
+            }
+        
+    @objc func dragModelInSceneView(panGesture: UIPanGestureRecognizer) {
+            let location = panGesture.location(in: sceneView)
+            switch panGesture.state {
+                case .began:
+                    guard let hitNodeResult = sceneView.hitTest(location, options: nil).first else{return}
+                    draggingNode = hitNodeResult.node
+                    if (draggingNode?.name != "furniture") {
+                        draggingNode = nil
+                        debugPrint("ABCDE")
+                        return
+                    }
+                    debugPrint("AHHHHHHHHH")
+                case .changed:
+                    let location = panGesture.location(in: sceneView)
+                    if ((location.x > 350) && (location.y<80)){
+                        draggingNode?.removeFromParentNode()
+                        return
+                    }
+                    //debugPrint(location)
+                    
+                    guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {
+                        debugPrint("No Plane")
+                        return
+                    }
+                    let translation = hitTestResult.worldTransform.translation
+                    let x = translation.x
+                    let y = translation.y
+                    let z = translation.z
+                    draggingNode?.position = SCNVector3(x,y,z)
+                    
+//                    draggingNode?.look(at: <#T##SCNVector3#>)
+                case .ended:
+                    draggingNode = nil
+                default:
+                    return
+            }
+        }
+    
+        func addTapGestureToSceneView() {
+            let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.addShipToSceneView(withGestureRecognizer:)))
+            sceneView.addGestureRecognizer(tapGestureRecognizer)
+            //debugPrint("Knock Knock")
+        }
+    
+        func addPanGestureToSceneView() {
+            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action:
+                #selector(ViewController.dragModelInSceneView(panGesture:)))
+            sceneView.addGestureRecognizer(panGestureRecognizer)
+            //debugPrint("Pan is Ready to Burn")
+    }
+    
+    @IBAction func showFurnitures(_ sender: UIButton) {
+        var image1: UIImage?
+        var image2: UIImage?
+        furniture1.removeFromSuperview()
+        furniture2.removeFromSuperview()
+        if (typeButton == sender.tag) {
+//            self.furniture1.isHidden = true
+//            hStack.removeArrangedSubview(furniture1)
+//            self.furniture2.isHidden = true
+//            furniture2.removeFromSuperview()
+            typeButton = 5
+        }
+        else {
+            infoindex = sender.tag
+            //var text = infoarray[infoindex]
+        
+            // Set image first
+            switch sender.tag {
+            case 0:
+                image1 = UIImage(imageLiteralResourceName: "furniture pics/table1.png")
+                image2 = UIImage(imageLiteralResourceName: "furniture pics/table2.png")
+            case 2:
+                
+                image1 = UIImage(imageLiteralResourceName: "furniture pics/bed1.png")
+                image2 = UIImage(imageLiteralResourceName: "furniture pics/bed2.png")
+            case 4:
+                //infoindex = 4
+                image1 = UIImage(imageLiteralResourceName: "furniture pics/cup1.png")
+                image2 = UIImage(imageLiteralResourceName: "furniture pics/cup2.png")
+            case 6:
+                //infoindex = 6
+                image1 = UIImage(imageLiteralResourceName: "furniture pics/chair1.png")
+                image2 = UIImage(imageLiteralResourceName: "furniture pics/chair2.png")
+            case 8:
+                //infoindex = 8
+                image1 = UIImage(imageLiteralResourceName: "furniture pics/sofa1.png")
+                image2 = UIImage(imageLiteralResourceName: "furniture pics/sofa2.png")
+            default:
+                return
+            }
+            
+            typeButton = sender.tag
+            // Set up stack and buttons
+            hStack = {
+                let stack = UIStackView()
+                stack.frame = CGRect(x:0, y:675, width:414, height: 131)
+                stack.axis = NSLayoutConstraint.Axis.horizontal
+                stack.distribution = .fillEqually
+                stack.spacing = 0
+                return stack
+            }()
+            
+            
+            furniture1.setImage(image1, for: .normal)
+            furniture2.setImage(image2, for: .normal)
+            
+            // Add furniture to stack and stack to subview
+//            hStack.addArrangedSubview(furniture1)
+//            hStack.addArrangedSubview(furniture2)
+            hStack.addArrangedSubview(furniture1)
+            hStack.addArrangedSubview(furniture2)
+            
+            sceneView.addSubview(hStack)
+//            hStack.addBackground(color: UIColor.white)
+        }
+    }
+    
+    var infoarray = infospill()
+    
+    @objc func Modelpop(sender : UIButton){
+        
+    }
+    @objc func fuck(sender : UIButton) {
+        if (sender.tag == 1) {
+            detail1.isHidden = false
+            info1.text = infoarray[infoindex]
+        }
+        else if (sender.tag == 2) {
+            detail2.isHidden = false
+            info2.text = infoarray[infoindex+1]
+        }
+    }
+    
+    @objc func fuckme(sender : UIButton) {
+        if (sender.tag == 1) {
+            detail1.isHidden = true
+        }
+        else if (sender.tag == 2) {
+            detail2.isHidden = true
+        }
+//        detail1.removeFromSuperview()
+    }
+    func xyz(index1: Int) -> Array<Double>{
+        var scalex = 0.0
+        var scaley = 0.0
+        var scalez = 0.0
+        
+        switch index1 {
+            case 0:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 1:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 2:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 3:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 4:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 5:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 6:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 7:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 8:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 9:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            default:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            }
+            return [scalex, scaley, scalez]
+        }
+        
+    @objc func realfuckme(sender : UIButton){
+        debugPrint("AAAASSSS")
+        let index = infoindex+sender.tag-1
+        let scalex = xyz(index1: index)[0]
+        let scaley = xyz(index1: index)[1]
+        let scalez = xyz(index1: index)[2]
+        let x1=scalex
+        let x2=scaley
+        let x3=scalez
+        let a = models[index]
+        debugPrint(a)
+        let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
+        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+        else {debugPrint("NO MODEL!")
+            return }
+        shipNode.position = SCNVector3(0,0,-1)
+
+        shipNode.scale = SCNVector3(scalex,scaley,scalez)
+        shipNode.renderingOrder = -200
+
+//        sceneView.pointOfView?.addChildNode(shipNode)
+        sceneView.scene.rootNode.addChildNode(shipNode)
+    }
 }
 
+extension UIStackView{
+    func addBackground(color: UIColor) {
+        let subview = UIView(frame: bounds)
+        subview.backgroundColor = color
+        subview.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        insertSubview(subview, at: 0)
+    }
+}
 
 extension ViewController {
     func predictUsingVision(imageFromArkitScene: CVPixelBuffer) {
         guard let request = request else { fatalError() }
         // vision framework configures the input size of image following our model's input configuration automatically
+        self.semaphore.wait()
         let handler = VNImageRequestHandler(cvPixelBuffer: imageFromArkitScene, orientation: .right)
         try? handler.perform([request])
 
     }
     
-    
     // MARK: - Post-processing
     func visionRequestDidComplete(request: VNRequest, error: Error?) {
+        //self.👨‍🔧.🏷(with: "endInference")
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
-            self.maxPlanesCount = predictions.count
-            self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
-            for prediction in self.predictions{
-                let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
-                self.addPlane(rect: rect)
-            }
-            self.isInferencing = false
+//            if self.sceneView.scene.rootNode.childNodes.count > 0
+//            {
+//                sceneView.scene.rootNode.enumerateChildNodes { (node, stop) in
+//                    node.removeFromParentNode()
+//                }
+//            }
+
+//            DispatchQueue.main.async {
+                self.boxesView.subviews.forEach({ $0.removeFromSuperview() })
+                for prediction in self.predictions{
+                    let rect: CGRect = self.boxesView.createLabelAndBox(prediction: prediction)
+                    self.addPlane(rect: rect)
+                }
+                self.isInferencing = false
+//            }
         } else {
             
             self.isInferencing = false
         }
+        self.semaphore.signal()
     }
-    
-    private func FritzCoreMLRequest(image : FritzVisionImage, options : FritzVisionSegmentationModelOptions) {
-        
-        guard let result = try? self.fritzModel.predict(image, options: options) else {
-            self.ReleaseBuffer()
-            return
-        }
-        
-        let maskImage = result.buildSingleClassMask(
-            forClass: FritzVisionPeopleClass.person,
-            clippingScoresAbove: 0.7,
-            zeroingScoresBelow: 0.3)
-        
-        guard let CIRef = maskImage?.ciImage else {
-            self.ReleaseBuffer()
-            return
-        }
-        guard let maskCGImage: CGImage = self.convertCIImageToCGImage(inputImage: CIRef) else {
-            self.ReleaseBuffer()
-            return
-        }
-
-        DispatchQueue.main.async {
-            self.fritzMaskMaterial.diffuse.contents = maskCGImage
-        }
-        
-        self.ReleaseBuffer()
-
-    }
-    
-
-    
-    
-    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
-            return cgImage
-        }
-        return nil
-    }
-    
-    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
-        print("oyeaaa###########")
-        let width = CGFloat(planeAnchor.extent.x)
-        let height = CGFloat(planeAnchor.extent.z)
-        let plane = SCNPlane(width: width, height: height)
-        
-        plane.materials.first?.diffuse.contents = planeColor
-        
-        let planeNode = SCNNode(geometry: plane)
-        
-        let x = CGFloat(planeAnchor.center.x)
-        let y = CGFloat(planeAnchor.center.y)
-        let z = CGFloat(planeAnchor.center.z)
-        planeNode.position = SCNVector3(x,y,z)
-        planeNode.eulerAngles.x = -.pi / 2
-        
-        node.addChildNode(planeNode)
-    }
-    
-    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        guard let planeAnchor = anchor as?  ARPlaneAnchor,
-            let planeNode = node.childNodes.first,
-            let plane = planeNode.geometry as? SCNPlane
-            else { return }
-        print("oyeaaa###########")
-        let width = CGFloat(planeAnchor.extent.x)
-        let height = CGFloat(planeAnchor.extent.z)
-        plane.width = width
-        plane.height = height
-        
-        let x = CGFloat(planeAnchor.center.x)
-        let y = CGFloat(planeAnchor.center.y)
-        let z = CGFloat(planeAnchor.center.z)
-        planeNode.position = SCNVector3(x, y, z)
-    }
-    
-    private func ReleaseBuffer() {
-         // The resulting image (mask) is available as observation.pixelBuffer
-         // Release currentBuffer when finished to allow processing next frame
-         self.currentFrameBuffer = nil
-     }
     
     func addPlane(rect : CGRect){
 
@@ -253,6 +520,9 @@ extension ViewController {
                     let rightbotTransform : matrix_float4x4 = rightbotResult.worldTransform
                     let width : CGFloat = CGFloat(abs(rightbotTransform.columns.3.x - originTransform.columns.3.x))
                     let height : CGFloat = CGFloat(abs(originTransform.columns.3.y - rightbotTransform.columns.3.y))
+                    //print("the height and width:")
+                    //print(width)
+                    //print(height)
                     
                     let transform : matrix_float4x4 = closestResult.worldTransform
                     let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, (transform.columns.3.z + originTransform.columns.3.z + rightbotTransform.columns.3.z)/3.0)
@@ -260,9 +530,10 @@ extension ViewController {
                     let node : SCNNode = createPlane(rect: rect, coordinate: worldCoord, planeWidth: width, planeHeight: height)
                     //node.geometry?.firstMaterial = maskMaterial()
                     
+                    
                     if planesRootNode.childNodes.count > maxPlanesCount
                     {
-                        planesRootNode.replaceChildNode(planesRootNode.childNodes[currentPlaneCount], with: node)
+                    planesRootNode.replaceChildNode(planesRootNode.childNodes[currentPlaneCount], with: node)
                         currentPlaneCount += 1
                         currentPlaneCount %= maxPlanesCount
                     }
@@ -282,8 +553,7 @@ extension ViewController {
 
 
                 if planesRootNode.childNodes.count > maxPlanesCount
-                {
-                     planesRootNode.replaceChildNode(planesRootNode.childNodes[currentPlaneCount], with: node)
+                {                planesRootNode.replaceChildNode(planesRootNode.childNodes[currentPlaneCount], with: node)
                     currentPlaneCount += 1
                     currentPlaneCount %= maxPlanesCount
                 }
@@ -293,43 +563,125 @@ extension ViewController {
                 }
 
             }
+            
+            guard let currentPosition = sceneView.pointOfView?.position else {return}
+            for nodes in planesRootNode.childNodes {
+                nodes.look(at: currentPosition)
+            }
         }
     }
     
     func createPlane(rect : CGRect, coordinate: SCNVector3, planeWidth : CGFloat, planeHeight : CGFloat) -> SCNNode
     {
         let plane = SCNPlane(width: planeWidth, height: planeHeight)
-        plane.cornerRadius = 0.005
+        plane.cornerRadius = 0.05
         let planeNode = SCNNode(geometry: plane)
         planeNode.geometry?.firstMaterial?.isDoubleSided = true
-        //planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .alpha
+        planeNode.geometry?.firstMaterial?.colorBufferWriteMask = .alpha
         planeNode.geometry?.firstMaterial?.writesToDepthBuffer = true
         planeNode.geometry?.firstMaterial?.readsFromDepthBuffer = true
-        planeNode.renderingOrder = -100
-        planeNode.geometry?.firstMaterial?.diffuse.contents = UIColor.orange
+        planeNode.renderingOrder = -300
+        // Make the plane visible
+        planeNode.geometry?.firstMaterial = maskMaterial()
+//        
+//        planeNode.physicsBody = SCNPhysicsBody(type: .static,
+//                                              shape: nil)
         planeNode.position = coordinate
         return planeNode
     }
     
     func maskMaterial() -> SCNMaterial {
         let maskMaterial = SCNMaterial()
-        maskMaterial.diffuse.contents = UIColor.white
+        maskMaterial.diffuse.contents = UIColor.transparentLightBlue
+        
+        // another way to do this is to set a very very low transparency value (but that
+        // would not receive shadows..)
+        // mask out everything we would have drawn..
+        //maskMaterial.colorBufferWriteMask = SCNColorMask(rawValue: 0)
+        
+        // occlude (render) from both sides please
         maskMaterial.isDoubleSided = true
         return maskMaterial
     }
     //MARK: - updatePredictionByARscene
     func updateCoreML() {
-
-        guard let buffer = currentFrameBuffer else { return }
-        self.predictUsingVision(imageFromArkitScene: buffer)
-        let fritzImage = FritzVisionImage(imageBuffer: buffer)
-        fritzImage.metadata = FritzVisionImageMetadata()
-        let options = FritzVisionSegmentationModelOptions()
-        options.imageCropAndScaleOption = .scaleFit
-        visionQueue.async {
-            self.FritzCoreMLRequest(image: fritzImage, options: options)
+        ///////////////////////////
+        // Get Camera Image as RGB
+        if let frame = sceneView.session.currentFrame{
+            let imageBuffer = frame.capturedImage
+            self.predictUsingVision(imageFromArkitScene: imageBuffer)
         }
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        // 1
+        guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+        
+        // 2
+        let width = CGFloat(planeAnchor.extent.x)
+        let height = CGFloat(planeAnchor.extent.z)
+        let plane = SCNPlane(width: width, height: height)
+        
+        // 3
+        
+        plane.materials.first?.diffuse.contents = UIColor.idkColor
+//        plane.materials.first?.isDoubleSided = true
+        
+        // 4
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.renderingOrder = -300
+        
+        // 5
+        let x = CGFloat(planeAnchor.center.x)
+        let y = CGFloat(planeAnchor.center.y)
+        let z = CGFloat(planeAnchor.center.z)
+        planeNode.position = SCNVector3(x,y,z)
+        planeNode.eulerAngles.x = -.pi / 2
+        
+        // 6
+        node.addChildNode(planeNode)
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        // 1
+        guard let planeAnchor = anchor as?  ARPlaneAnchor,
+            let planeNode = node.childNodes.first,
+            let plane = planeNode.geometry as? SCNPlane
+            else { return }
+        
+        // 2
+        let width = CGFloat(planeAnchor.extent.x)
+        let height = CGFloat(planeAnchor.extent.z)
+        plane.width = width
+        plane.height = height
+        
+        // 3
+        let x = CGFloat(planeAnchor.center.x)
+        let y = CGFloat(planeAnchor.center.y)
+        let z = CGFloat(planeAnchor.center.z)
+        planeNode.position = SCNVector3(x, y, z)
+    }
+}
 
+
+extension float4x4 {
+    var translation: float3 {
+        let translation = self.columns.3
+        return float3 (translation.x, translation.y, translation.z)
+    }
+}
+
+extension UIColor {
+    open class var transparentLightBlue: UIColor {
+        return UIColor(red: 90/255, green: 200/255, blue: 250/255, alpha: 0.30)
+    }
+    
+    open class var idkColor: UIColor {
+        return UIColor(white: 0.0, alpha: 0.8)
+    }
+    
+    open class var detail: UIColor {
+        return UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.30 )
     }
 }
 

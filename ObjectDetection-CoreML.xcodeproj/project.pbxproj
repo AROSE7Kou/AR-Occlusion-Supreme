@@ -3,17 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A2382292360E7C9004CFFB7 /* YOLOv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A2382282360E7C9004CFFB7 /* YOLOv3.mlmodel */; };
-		4A23822B2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A23822A2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel */; };
-		4A44655423638D1E009C5E4B /* DeepLabV3FP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655323638D1E009C5E4B /* DeepLabV3FP16.mlmodel */; };
-		4A44655623638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655523638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel */; };
-		4A44655823638D2B009C5E4B /* DeepLabV3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 4A44655723638D2B009C5E4B /* DeepLabV3.mlmodel */; };
 		4A879B3523D0061700E37B4B /* IronMan in Resources */ = {isa = PBXBuildFile; fileRef = 4A879B3423D0061700E37B4B /* IronMan */; };
-		4AC5721B23E8BCA900551745 /* Fritz-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4AC5721A23E8BCA900551745 /* Fritz-Info.plist */; };
 		554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F149B220362AB00B828B0 /* AppDelegate.swift */; };
 		554F149E220362AB00B828B0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F149D220362AB00B828B0 /* ViewController.swift */; };
 		554F14A1220362AB00B828B0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 554F149F220362AB00B828B0 /* Main.storyboard */; };
@@ -27,21 +21,20 @@
 		71B8323322E2B7F900207D05 /* YOLOv3TinyFP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323022E2B7F500207D05 /* YOLOv3TinyFP16.mlmodel */; };
 		71B8323422E2B7F900207D05 /* YOLOv3Tiny.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323122E2B7F800207D05 /* YOLOv3Tiny.mlmodel */; };
 		71B8323522E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */; };
-		71BBE00822E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 71BBE00522E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel */; };
-		BCE88F0D522CAC17F6A1CE45 /* Pods_ObjectDetection_CoreML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7730BD42FC8CED4FFA9DD242 /* Pods_ObjectDetection_CoreML.framework */; };
+		BA0E9DCB23FCC38C00058180 /* 3D Objects in Resources */ = {isa = PBXBuildFile; fileRef = BA0E9DCA23FCC38C00058180 /* 3D Objects */; };
+		BA4639AA240B787000A17F36 /* furniture pics in Resources */ = {isa = PBXBuildFile; fileRef = BA4639A8240B786F00A17F36 /* furniture pics */; };
+		BABE3D6A240B804500FBD604 /* cup.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D65240B804200FBD604 /* cup.jpeg */; };
+		BABE3D6B240B804500FBD604 /* sofa.jpg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D66240B804300FBD604 /* sofa.jpg */; };
+		BABE3D6C240B804500FBD604 /* bed.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D67240B804400FBD604 /* bed.jpeg */; };
+		BABE3D6D240B804500FBD604 /* chair.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D68240B804400FBD604 /* chair.jpeg */; };
+		BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BABE3D69240B804500FBD604 /* desk.jpeg */; };
+		E279E56024103F4600C66C01 /* trash.png in Resources */ = {isa = PBXBuildFile; fileRef = E279E55F24103F4500C66C01 /* trash.png */; };
+		E279E56224104C9500C66C01 /* Information.swift in Sources */ = {isa = PBXBuildFile; fileRef = E279E56124104C9500C66C01 /* Information.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		054F96AB84C97F8D642C98B8 /* Pods-ObjectDetection-CoreML.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetection-CoreML.release.xcconfig"; path = "Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML.release.xcconfig"; sourceTree = "<group>"; };
-		0B259E6324C411CD60F01C29 /* Pods-ObjectDetection-CoreML.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetection-CoreML.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML.debug.xcconfig"; sourceTree = "<group>"; };
-		4A2382282360E7C9004CFFB7 /* YOLOv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = YOLOv3.mlmodel; path = ../../../../YOLOv3.mlmodel; sourceTree = "<group>"; };
-		4A23822A2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = SqueezeNetFP16.mlmodel; path = ../../../../SqueezeNetFP16.mlmodel; sourceTree = "<group>"; };
-		4A44655323638D1E009C5E4B /* DeepLabV3FP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = DeepLabV3FP16.mlmodel; path = ../../../../DeepLabV3FP16.mlmodel; sourceTree = "<group>"; };
-		4A44655523638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = DeepLabV3Int8LUT.mlmodel; path = ../../../../DeepLabV3Int8LUT.mlmodel; sourceTree = "<group>"; };
-		4A44655723638D2B009C5E4B /* DeepLabV3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = DeepLabV3.mlmodel; path = ../../../../DeepLabV3.mlmodel; sourceTree = "<group>"; };
 		4A879B3423D0061700E37B4B /* IronMan */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = IronMan; sourceTree = SOURCE_ROOT; };
-		4AC5721A23E8BCA900551745 /* Fritz-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Fritz-Info.plist"; sourceTree = SOURCE_ROOT; };
-		554F1498220362AB00B828B0 /* ArosePlanesOcclusion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ArosePlanesOcclusion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		554F1498220362AB00B828B0 /* ObjectDetection-CoreML.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ObjectDetection-CoreML.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		554F149B220362AB00B828B0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		554F149D220362AB00B828B0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		554F14A0220362AB00B828B0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -56,8 +49,15 @@
 		71B8323022E2B7F500207D05 /* YOLOv3TinyFP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3TinyFP16.mlmodel; sourceTree = "<group>"; };
 		71B8323122E2B7F800207D05 /* YOLOv3Tiny.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3Tiny.mlmodel; sourceTree = "<group>"; };
 		71B8323222E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3TinyInt8LUT.mlmodel; sourceTree = "<group>"; };
-		71BBE00522E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3Int8LUT.mlmodel; sourceTree = "<group>"; };
-		7730BD42FC8CED4FFA9DD242 /* Pods_ObjectDetection_CoreML.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ObjectDetection_CoreML.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA0E9DCA23FCC38C00058180 /* 3D Objects */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "3D Objects"; sourceTree = "<group>"; };
+		BA4639A8240B786F00A17F36 /* furniture pics */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "furniture pics"; sourceTree = "<group>"; };
+		BABE3D65240B804200FBD604 /* cup.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = cup.jpeg; path = "icon pics/cup.jpeg"; sourceTree = "<group>"; };
+		BABE3D66240B804300FBD604 /* sofa.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = sofa.jpg; path = "icon pics/sofa.jpg"; sourceTree = "<group>"; };
+		BABE3D67240B804400FBD604 /* bed.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = bed.jpeg; path = "icon pics/bed.jpeg"; sourceTree = "<group>"; };
+		BABE3D68240B804400FBD604 /* chair.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = chair.jpeg; path = "icon pics/chair.jpeg"; sourceTree = "<group>"; };
+		BABE3D69240B804500FBD604 /* desk.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = desk.jpeg; path = "icon pics/desk.jpeg"; sourceTree = "<group>"; };
+		E279E55F24103F4500C66C01 /* trash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = trash.png; sourceTree = "<group>"; };
+		E279E56124104C9500C66C01 /* Information.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Information.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,54 +65,24 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BCE88F0D522CAC17F6A1CE45 /* Pods_ObjectDetection_CoreML.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		02BFCDE0044C1398FCD5B1FA /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				0B259E6324C411CD60F01C29 /* Pods-ObjectDetection-CoreML.debug.xcconfig */,
-				054F96AB84C97F8D642C98B8 /* Pods-ObjectDetection-CoreML.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		19852A11CFEA6982C9C08B54 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				7730BD42FC8CED4FFA9DD242 /* Pods_ObjectDetection_CoreML.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		4A44655223637F4E009C5E4B /* DEPTHmodel */ = {
-			isa = PBXGroup;
-			children = (
-				4A44655323638D1E009C5E4B /* DeepLabV3FP16.mlmodel */,
-				4A44655523638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel */,
-				4A44655723638D2B009C5E4B /* DeepLabV3.mlmodel */,
-			);
-			path = DEPTHmodel;
-			sourceTree = "<group>";
-		};
 		554F148F220362AB00B828B0 = {
 			isa = PBXGroup;
 			children = (
 				554F149A220362AB00B828B0 /* ObjectDetection-CoreML */,
 				554F1499220362AB00B828B0 /* Products */,
-				02BFCDE0044C1398FCD5B1FA /* Pods */,
-				19852A11CFEA6982C9C08B54 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 		554F1499220362AB00B828B0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				554F1498220362AB00B828B0 /* ArosePlanesOcclusion.app */,
+				554F1498220362AB00B828B0 /* ObjectDetection-CoreML.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,12 +90,20 @@
 		554F149A220362AB00B828B0 /* ObjectDetection-CoreML */ = {
 			isa = PBXGroup;
 			children = (
+				BABE3D67240B804400FBD604 /* bed.jpeg */,
+				BABE3D68240B804400FBD604 /* chair.jpeg */,
+				BABE3D65240B804200FBD604 /* cup.jpeg */,
+				E279E55F24103F4500C66C01 /* trash.png */,
+				BABE3D69240B804500FBD604 /* desk.jpeg */,
+				BABE3D66240B804300FBD604 /* sofa.jpg */,
+				BA4639A8240B786F00A17F36 /* furniture pics */,
+				BA0E9DCA23FCC38C00058180 /* 3D Objects */,
 				4A879B3423D0061700E37B4B /* IronMan */,
 				554F149F220362AB00B828B0 /* Main.storyboard */,
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
 				554F149D220362AB00B828B0 /* ViewController.swift */,
+				E279E56124104C9500C66C01 /* Information.swift */,
 				558918EC2208218800F182BA /* DrawingBoundingBoxView.swift */,
-				4AC5721A23E8BCA900551745 /* Fritz-Info.plist */,
 				71B8322322E2B0BC00207D05 /* ultils */,
 				71B8322222E2B0B200207D05 /* mlmodel */,
 				554F14A2220362AC00B828B0 /* Assets.xcassets */,
@@ -138,8 +116,6 @@
 		71B8322222E2B0B200207D05 /* mlmodel */ = {
 			isa = PBXGroup;
 			children = (
-				4A44655223637F4E009C5E4B /* DEPTHmodel */,
-				71BBE00322E2BAB200E74F11 /* YOLOv3 */,
 				71B8323622E2B99500207D05 /* YOLOv3Tiny */,
 				715E7E6B2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel */,
 				71B8322B22E2B0FB00207D05 /* ObjectDetector.mlmodel */,
@@ -166,16 +142,6 @@
 			path = YOLOv3Tiny;
 			sourceTree = "<group>";
 		};
-		71BBE00322E2BAB200E74F11 /* YOLOv3 */ = {
-			isa = PBXGroup;
-			children = (
-				4A2382282360E7C9004CFFB7 /* YOLOv3.mlmodel */,
-				4A23822A2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel */,
-				71BBE00522E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel */,
-			);
-			path = YOLOv3;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -183,11 +149,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 554F14AA220362AC00B828B0 /* Build configuration list for PBXNativeTarget "ObjectDetection-CoreML" */;
 			buildPhases = (
-				D30BF30E5CCC138EF9E17529 /* [CP] Check Pods Manifest.lock */,
 				554F1494220362AB00B828B0 /* Sources */,
 				554F1495220362AB00B828B0 /* Frameworks */,
 				554F1496220362AB00B828B0 /* Resources */,
-				32FD4E8CD0BCF5D86F6D54DC /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -195,7 +159,7 @@
 			);
 			name = "ObjectDetection-CoreML";
 			productName = "SSDMobileNet-CoreML";
-			productReference = 554F1498220362AB00B828B0 /* ArosePlanesOcclusion.app */;
+			productReference = 554F1498220362AB00B828B0 /* ObjectDetection-CoreML.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -210,6 +174,7 @@
 				TargetAttributes = {
 					554F1497220362AB00B828B0 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1130;
 					};
 				};
 			};
@@ -236,79 +201,39 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BABE3D6B240B804500FBD604 /* sofa.jpg in Resources */,
+				BABE3D6A240B804500FBD604 /* cup.jpeg in Resources */,
+				E279E56024103F4600C66C01 /* trash.png in Resources */,
+				BA0E9DCB23FCC38C00058180 /* 3D Objects in Resources */,
 				554F14A6220362AC00B828B0 /* LaunchScreen.storyboard in Resources */,
-				4AC5721B23E8BCA900551745 /* Fritz-Info.plist in Resources */,
+				BABE3D6E240B804500FBD604 /* desk.jpeg in Resources */,
+				BA4639AA240B787000A17F36 /* furniture pics in Resources */,
+				BABE3D6D240B804500FBD604 /* chair.jpeg in Resources */,
 				554F14A3220362AC00B828B0 /* Assets.xcassets in Resources */,
 				554F14A1220362AB00B828B0 /* Main.storyboard in Resources */,
 				4A879B3523D0061700E37B4B /* IronMan in Resources */,
+				BABE3D6C240B804500FBD604 /* bed.jpeg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		32FD4E8CD0BCF5D86F6D54DC /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D30BF30E5CCC138EF9E17529 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ObjectDetection-CoreML-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		554F1494220362AB00B828B0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E279E56224104C9500C66C01 /* Information.swift in Sources */,
 				554F149E220362AB00B828B0 /* ViewController.swift in Sources */,
-				4A2382292360E7C9004CFFB7 /* YOLOv3.mlmodel in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				558918ED2208218800F182BA /* DrawingBoundingBoxView.swift in Sources */,
 				554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */,
-				4A44655623638D26009C5E4B /* DeepLabV3Int8LUT.mlmodel in Sources */,
-				4A23822B2360E7D3004CFFB7 /* SqueezeNetFP16.mlmodel in Sources */,
-				4A44655423638D1E009C5E4B /* DeepLabV3FP16.mlmodel in Sources */,
 				71B8323322E2B7F900207D05 /* YOLOv3TinyFP16.mlmodel in Sources */,
 				71B8323522E2B7F900207D05 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
-				71BBE00822E2BAB200E74F11 /* YOLOv3Int8LUT.mlmodel in Sources */,
 				71B8323422E2B7F900207D05 /* YOLOv3Tiny.mlmodel in Sources */,
 				715E7E6C2235DC75008DBC6F /* MobileNetV2_SSDLite.mlmodel in Sources */,
 				554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */,
 				71B8322F22E2B0FB00207D05 /* ObjectDetector.mlmodel in Sources */,
-				4A44655823638D2B009C5E4B /* DeepLabV3.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -452,10 +377,10 @@
 		};
 		554F14AB220362AC00B828B0 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0B259E6324C411CD60F01C29 /* Pods-ObjectDetection-CoreML.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				COREML_CODEGEN_LANGUAGE = Swift;
 				DEVELOPMENT_TEAM = 366S535969;
 				INFOPLIST_FILE = "ObjectDetection-CoreML/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -463,19 +388,19 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.AROSE.ArosePlanesOcclusion;
-				PRODUCT_NAME = ArosePlanesOcclusion;
-				SWIFT_VERSION = 4.2;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tucan9389.ObjectDetection-CoreML";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		554F14AC220362AC00B828B0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 054F96AB84C97F8D642C98B8 /* Pods-ObjectDetection-CoreML.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				COREML_CODEGEN_LANGUAGE = Swift;
 				DEVELOPMENT_TEAM = 366S535969;
 				INFOPLIST_FILE = "ObjectDetection-CoreML/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -483,9 +408,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.AROSE.ArosePlanesOcclusion;
-				PRODUCT_NAME = ArosePlanesOcclusion;
-				SWIFT_VERSION = 4.2;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tucan9389.ObjectDetection-CoreML";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

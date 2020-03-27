@@ -50,6 +50,8 @@ class ViewController: UIViewController , ARSCNViewDelegate{
     var info2: UITextView! = UITextView()
     var infoindex = 0
     let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup0.scn", "3D Objects/cup1.scn", "3D Objects/chair0.scn", "3D Objects/ship.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
+//    @objc func initialConvert(){
+//    }
     // MARK: - TableView Data
     var predictions: [VNRecognizedObjectObservation] = []
     
@@ -374,18 +376,68 @@ class ViewController: UIViewController , ARSCNViewDelegate{
     
     @objc func realfuckme(sender : UIButton){
         debugPrint("AAAASSSS")
-        
-        var a = models[infoindex+sender.tag-1]
+        var scalex = 0.0
+        var scaley = 0.0
+        var scalez = 0.0
+        var index = infoindex+sender.tag-1
+        var a = models[index]
         debugPrint(a)
         let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
         guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
         else {debugPrint("NO MODEL!")
             return }
         shipNode.position = SCNVector3(0,0,-1)
+        switch index {
+            case 0:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 1:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 2:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 3:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 4:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 5:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 6:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 7:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 8:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            case 9:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+            default:
+                scalex = 0.0007
+                scaley = 0.0007
+                scalez = 0.0007
+        }
+        shipNode.scale = SCNVector3(scalex,scaley,scalez)
         shipNode.renderingOrder = -200
 
-        sceneView.pointOfView?.addChildNode(shipNode)
-//        sceneView.scene.rootNode.addChildNode(shipNode)
+//        sceneView.pointOfView?.addChildNode(shipNode)
+        sceneView.scene.rootNode.addChildNode(shipNode)
     }
 }
 

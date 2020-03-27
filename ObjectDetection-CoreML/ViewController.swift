@@ -297,30 +297,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     
     
     @objc func addShipToSceneView(withGestureRecognizer recognizer: UIGestureRecognizer) {
-        let tapLocation = recognizer.location(in: sceneView)
-        let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
-        
-        debugPrint("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
+            let tapLocation = recognizer.location(in: sceneView)
+            let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
+            
+            debugPrint("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
 
-        guard let hitTestResult = hitTestResults.first else { return }
-        let translation = hitTestResult.worldTransform.translation
-        let x = translation.x
-        let y = translation.y
-        let z = translation.z
-        let shipScene = SCNScene(named: "3D Objects/chair1.scn")
-//        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
-        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
-            else {debugPrint("NO MODEL!")
-                return }
-//        guard let shipNode = shipScene?.rootNode else {return}
-//        shipNode.scale = SCNVector3(0.1, 0.1, 0.1)
-        shipNode.worldPosition = SCNVector3(x,y,z)
-        shipNode.renderingOrder = -1
+            guard let hitTestResult = hitTestResults.first else { return }
+            let translation = hitTestResult.worldTransform.translation
+            let x = translation.x
+            let y = translation.y
+            let z = translation.z
+            let shipScene = SCNScene(named: "3D Objects/chair1.scn")
+    //        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
+            guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+                else {debugPrint("NO MODEL!")
+                    return }
+            registeredModels[id] = shipNode
+            id += 1
+    //        guard let shipNode = shipScene?.rootNode else {return}
+    //        shipNode.scale = SCNVector3(0.1, 0.1, 0.1)
+            shipNode.worldPosition = SCNVector3(x,y,z)
+            shipNode.renderingOrder = -1
 
-        sceneView.scene.rootNode.addChildNode(shipNode)
+            sceneView.scene.rootNode.addChildNode(shipNode)
 
-        debugPrint("Fuck UUUUUUUUUUUUU")
-    }
+            debugPrint("Fuck UUUUUUUUUUUUU")
+        }
         
     @objc func dragModelInSceneView(panGesture: UIPanGestureRecognizer) {
         let location = panGesture.location(in: sceneView)

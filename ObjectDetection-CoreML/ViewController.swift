@@ -88,7 +88,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         addTapGestureToSceneView()
         addPanGestureToSceneView()
         setUpModel()
-        bilbordCreate()
+//      create occlusion mask planes
+        bilbordsCreate()
         
         // setup mask button
         let buttonMask = UIButton(frame: CGRect(x: 10, y: 50, width: 100, height: 30))
@@ -201,35 +202,35 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         self.visionRequestDepth = [depthRequest]
     }
     
-    func bilbordCreate() {
-        maskMaterial = SCNMaterial()
-        maskMaterial.diffuse.contents = UIColor(white: 1, alpha: 0)
-        maskMaterial.colorBufferWriteMask = .alpha
-        
-        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
-        rectangleDepth.materials = [maskMaterial]
-        
-        maskNode = SCNNode(geometry: rectangleDepth)
-        maskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
-        maskNode?.position = SCNVector3Make(0, 0, -0.05)
-        maskNode.renderingOrder = -2
-        maskNode.name = "mask"
-        sceneView.pointOfView?.presentation.addChildNode(maskNode!)
-    }
+//    func bilbordCreate() {
+//        maskMaterial = SCNMaterial()
+//        maskMaterial.diffuse.contents = UIColor(white: 1, alpha: 0)
+//        maskMaterial.colorBufferWriteMask = .alpha
+//
+//        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
+//        rectangleDepth.materials = [maskMaterial]
+//
+//        maskNode = SCNNode(geometry: rectangleDepth)
+//        maskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
+//        maskNode?.position = SCNVector3Make(0, 0, -0.05)
+//        maskNode.renderingOrder = -2
+//        maskNode.name = "mask"
+//        sceneView.pointOfView?.presentation.addChildNode(maskNode!)
+//    }
     
     // New method to create a bunch of bilboards
     func bilbordsCreate() {
-        maskMaterial = SCNMaterial()
-        maskMaterial.diffuse.contents = UIColor(white: 1, alpha: 0)
-        maskMaterial.colorBufferWriteMask = .alpha
-        
-        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
-        rectangleDepth.materials = [maskMaterial]
-        
+        // 我觉得应该每个单独建 不然一改全改了
         for i in 0...(max_segmentation_count - 1) {
-            maskNode = SCNNode(geometry: rectangleDepth)
-            maskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
-            maskNode?.position = SCNVector3Make(0, 0, -0.05)
+
+            let maskMaterial = SCNMaterial()
+            maskMaterial.diffuse.contents = UIColor(white: 1, alpha: 0)
+            maskMaterial.colorBufferWriteMask = .alpha
+            let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
+            rectangleDepth.materials = [maskMaterial]
+            let maskNode = SCNNode(geometry: rectangleDepth)
+            maskNode.eulerAngles = SCNVector3Make(0, 0, 0)
+            maskNode.position = SCNVector3Make(0, 0, -0.05)
             maskNode.renderingOrder = -2
             maskNode.name = "mask" + String(i)
             maskNodes[i] = maskNode
@@ -243,7 +244,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     
     // Update the bilbords based on the sorted array
     func bilbordUpdate() {
-        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
         let allTuples: [(Int32, Double)] = depthSort(segMap: MLMultiArray.getSegmentDepthTuple(segmentationMap: segmentationMap!, depthMap: depthMap!)!)
         var segIDArray: [Int32] = []
         var renderingOrder = -100
@@ -252,14 +252,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             if (!isVirtualID(id: tuple.0)) {
                 segIDArray.append(tuple.0)
             } else {
-                let CGimage = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: segIDArray)
-                self.maskMaterial.diffuse.contents = CGimage
-                rectangleDepth.materials = [self.maskMaterial]
+                if let image = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: segIDArray){
+                    modifyMaskNode(index: maskIndex, renderingOrder: renderingOrder, image: image)
+                    segIDArray = []
+                    renderingOrder += 1
+                    maskIndex += 1
+                }
                 // TODO: reset all mask nodes
-                modifyMaskNode(index: maskIndex, renderingOrder: renderingOrder, geometry: rectangleDepth)
-                segIDArray = []
-                renderingOrder += 1
-                maskIndex += 1
             }
         }
         
@@ -271,11 +270,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 //        for i in 0...(max_segmentation_count - 1) {
 //            modifyMaskNode(index: i, renderingOrder: -1, geometry: rectangleDepth)
 //        }
+    
     }
     
     // helper function to modify a single mask node
-    func modifyMaskNode(index: Int, renderingOrder: Int, geometry: SCNPlane) {
-        maskNodes[index].geometry = geometry
+    func modifyMaskNode(index: Int, renderingOrder: Int, image: CGImage) {
+        maskNodes[index].geometry?.materials[0].diffuse.contents = image
         maskNodes[index].renderingOrder = renderingOrder
     }
     
@@ -307,7 +307,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             let x = translation.x
             let y = translation.y
             let z = translation.z
-            let shipScene = SCNScene(named: "3D Objects/chair1.scn")
+            let shipScene = SCNScene(named: "3D Objects/chair1/chair1.scn")
     //        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
             guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
                 else {debugPrint("NO MODEL!")
@@ -530,12 +530,6 @@ extension ViewController {
                         print(error)
                     }
                 }
-
-//                let CGimage = array.cgMask(min: 0, max: 1)
-//                DispatchQueue.main.async {
-//                    self.maskMaterial.diffuse.contents = CGimage
-//                }
-//                self.ReleaseBuffer()
             }
         }
     }
@@ -557,13 +551,9 @@ extension ViewController {
                 //print(newArray.shape)
                 depthMap = newArray
                 
-                //print(Double(self.depthThreshold) + 0.3)
-                let CGimage = MLMultiArray.buildFromSegmentationDepth(segmentationMap: self.segmentationMap!, depthMap: self.depthMap!, threshold: Double(self.depthThreshold) + 0.3)
-                
-//                let CGimage = newArray.cgImage(min: 0.5, max: 6)
-//                let CGimage = array.cgMaskFCRN(min: 0.5, max: 5, threshold: Double(self.depthThreshold) + 0.3)
+//                let CGimage = MLMultiArray.buildFromSegmentationDepth(segmentationMap: self.segmentationMap!, depthMap: self.depthMap!, threshold: Double(self.depthThreshold) + 0.3)
                 DispatchQueue.main.async {
-                    self.maskMaterial.diffuse.contents = CGimage
+                    self.bilbordUpdate()
                 }
                 self.ReleaseBuffer()
             }
@@ -644,7 +634,7 @@ extension UIColor {
     }
     
     open class var idkColor: UIColor {
-        return UIColor(white: 0.0, alpha: 0.3)
+        return UIColor(white: 0.0, alpha: 0.7)
     }
     
     open class var detail: UIColor {

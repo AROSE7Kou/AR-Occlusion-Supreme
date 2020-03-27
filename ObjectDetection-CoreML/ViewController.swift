@@ -50,6 +50,9 @@ class ViewController: UIViewController , ARSCNViewDelegate{
     var info2: UITextView! = UITextView()
     var infoindex = 0
     let models:[String] = ["3D Objects/table0.scn", "3D Objects/table1.scn", "3D Objects/desk0.scn", "3D Objects/desk1.scn", "3D Objects/cup0.scn", "3D Objects/cup1.scn", "3D Objects/chair0.scn", "3D Objects/ship.scn", "3D Objects/sofa0.scn", "3D Objects/sofa1.scn"]
+    var x1 = 0.0
+    var x2= 0.0
+    var x3 = 0.0
 //    @objc func initialConvert(){
 //    }
     // MARK: - TableView Data
@@ -223,6 +226,8 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                     else {debugPrint("NO MODEL!")
                         return }
                 shipNode.position = SCNVector3(x,y,z)
+                shipNode.scale = SCNVector3(x1,x2,x3)
+
                 shipNode.renderingOrder = -200
 
                 sceneView.scene.rootNode.addChildNode(shipNode)
@@ -373,21 +378,12 @@ class ViewController: UIViewController , ARSCNViewDelegate{
         }
 //        detail1.removeFromSuperview()
     }
-    
-    @objc func realfuckme(sender : UIButton){
-        debugPrint("AAAASSSS")
+    func xyz(index1: Int) -> Array<Double>{
         var scalex = 0.0
         var scaley = 0.0
         var scalez = 0.0
-        var index = infoindex+sender.tag-1
-        var a = models[index]
-        debugPrint(a)
-        let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
-        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
-        else {debugPrint("NO MODEL!")
-            return }
-        shipNode.position = SCNVector3(0,0,-1)
-        switch index {
+        
+        switch index1 {
             case 0:
                 scalex = 0.0007
                 scaley = 0.0007
@@ -432,7 +428,27 @@ class ViewController: UIViewController , ARSCNViewDelegate{
                 scalex = 0.0007
                 scaley = 0.0007
                 scalez = 0.0007
+            }
+            return [scalex, scaley, scalez]
         }
+        
+    @objc func realfuckme(sender : UIButton){
+        debugPrint("AAAASSSS")
+        let index = infoindex+sender.tag-1
+        let scalex = xyz(index1: index)[0]
+        let scaley = xyz(index1: index)[1]
+        let scalez = xyz(index1: index)[2]
+        let x1=scalex
+        let x2=scaley
+        let x3=scalez
+        let a = models[index]
+        debugPrint(a)
+        let shipScene = SCNScene(named: models[infoindex+sender.tag-1])
+        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+        else {debugPrint("NO MODEL!")
+            return }
+        shipNode.position = SCNVector3(0,0,-1)
+
         shipNode.scale = SCNVector3(scalex,scaley,scalez)
         shipNode.renderingOrder = -200
 

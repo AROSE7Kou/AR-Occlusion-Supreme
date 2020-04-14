@@ -6,13 +6,13 @@
 //  Copyright © 2019 tucan9389. All rights reserved.
 //
 
+import SwiftUI
 import UIKit
 import Vision
 
 //public protocol DrawingBoundingBoxViewDelegate: class{
 //    func arSceneTransform(prediction: VNRecognizedObjectObservation, matrix: CGAffineTransform)
 //}
-
 class DrawingBoundingBoxView: UIView {
     
     static private var colors: [String: UIColor] = [:]

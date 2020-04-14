@@ -19,12 +19,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 
     // MARK: - UI Properties
     @IBOutlet weak var sceneView: ARSCNView!
-    
-    var maskNode : SCNNode!
-    var maskNodes = Array(repeating: SCNNode(), count: max_segmentation_count)
+    var maskNodes = Array(repeating: MYNode.init(), count: max_segmentation_count)
     var maskMaterial : SCNMaterial!
     var id: Int32 = 40
-    var registeredModels: [Int32 : SCNNode] = [:]
+    var registeredModels: [Int32 : MYNode] = [:]
     
     // MARK: - Vision Requests
     var currentBuffer: CVPixelBuffer?
@@ -43,8 +41,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     var lastExecution = Date()
     let planesRootNode = SCNNode()
     var hitNodeResults: [SCNHitTestResult?] = []
-    var draggingNode: SCNNode?
-    
+    var draggingNode: SCNNode!
+    var dragId : Int32!
+    var cameraInverse: simd_float4x4?
     // MARK: - Button Controller
     var typeButton = -1
     var hStack: UIStackView! = UIStackView()
@@ -73,16 +72,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         
         sceneView.showsStatistics = true
         
-//        let vaseScene = SCNScene(named:"IronMan/IronMan.scn")
-////        let vaseScene = SCNScene(named:"3D Objects/chair1.scn")
-//        guard let ironManNode =  vaseScene?.rootNode else { return }
-//        ironManNode.name = "IronMan"
-//        ironManNode.worldPosition = SCNVector3(0, -0.3, -1)
-////        ironManNode.scale = SCNVector3(0.1,0.1,0.1)
-//
-//        sceneView.scene.rootNode.addChildNode(ironManNode)
-        
-
 //      Enable Default Lighting - makes the 3D text a bit poppier.
         sceneView.autoenablesDefaultLighting = true
         addTapGestureToSceneView()
@@ -168,20 +157,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     }
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-            guard currentBuffer == nil, case .normal = frame.camera.trackingState else {
-                return
-            }
-            currentBuffer = frame.capturedImage
-            
-            // Calculate depth
-            guard let position = sceneView.scene.rootNode.childNode(withName: "furniture", recursively: true)?.position else{
-                self.ReleaseBuffer()
-                return}
-            let virtualCoord = simd_float4(position.x, position.y, position.z, 1)
-            let result = frame.camera.transform.inverse * virtualCoord
-            depthThreshold = -result.z
-            startDetection()
+        
+        guard currentBuffer == nil, case .normal = frame.camera.trackingState else {
+            return
         }
+        currentBuffer = frame.capturedImage
+
+
+    
+        self.cameraInverse = frame.camera.transform.inverse
+
+        startDetection()
+    }
     
     
     // MARK: - Setup
@@ -202,21 +189,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         self.visionRequestDepth = [depthRequest]
     }
     
-//    func bilbordCreate() {
-//        maskMaterial = SCNMaterial()
-//        maskMaterial.diffuse.contents = UIColor(white: 1, alpha: 0)
-//        maskMaterial.colorBufferWriteMask = .alpha
-//
-//        let rectangleDepth = SCNPlane(width: 0.0464, height: 0.058)
-//        rectangleDepth.materials = [maskMaterial]
-//
-//        maskNode = SCNNode(geometry: rectangleDepth)
-//        maskNode?.eulerAngles = SCNVector3Make(0, 0, 0)
-//        maskNode?.position = SCNVector3Make(0, 0, -0.05)
-//        maskNode.renderingOrder = -2
-//        maskNode.name = "mask"
-//        sceneView.pointOfView?.presentation.addChildNode(maskNode!)
-//    }
     
     // New method to create a bunch of bilboards
     func bilbordsCreate() {
@@ -231,20 +203,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             let maskNode = SCNNode(geometry: rectangleDepth)
             maskNode.eulerAngles = SCNVector3Make(0, 0, 0)
             maskNode.position = SCNVector3Make(0, 0, -0.05)
-            maskNode.renderingOrder = -2
+            maskNode.renderingOrder = 0
             maskNode.name = "mask" + String(i)
-            maskNodes[i] = maskNode
-            sceneView.pointOfView?.presentation.addChildNode(maskNodes[i])
+            sceneView.pointOfView?.presentation.addChildNode(maskNode)
+            maskNodes[i] = MYNode.init(node:maskNode) 
         }
     }
     
     func isVirtualID(id: Int32) -> Bool {
-        return id > 40;
+        return id >= 40;
     }
     
     // Update the bilbords based on the sorted array
     func bilbordUpdate() {
+        print("#########update bilborads############")
         let allTuples: [(Int32, Double)] = depthSort(segMap: MLMultiArray.getSegmentDepthTuple(segmentationMap: segmentationMap!, depthMap: depthMap!)!)
+        
+        print(allTuples)
         var segIDArray: [Int32] = []
         var renderingOrder = -100
         var maskIndex = 0
@@ -258,103 +233,127 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
                     renderingOrder += 1
                     maskIndex += 1
                 }
+                if let modelNode = registeredModels[tuple.0]
+                {
+                    modelNode.myNode.renderingOrder = renderingOrder
+                    renderingOrder += 1
+                }
                 // TODO: reset all mask nodes
             }
         }
-        
-//        segIDArray.append()
-//        let CGimage = MLMultiArray.buildFromSegID(segmentationMap: segmentationMap!, segIDArray: segIDArray)
-//        self.maskMaterial.diffuse.contents = CGimage
-//        rectangleDepth.materials = [self.maskMaterial]
-//
-//        for i in 0...(max_segmentation_count - 1) {
-//            modifyMaskNode(index: i, renderingOrder: -1, geometry: rectangleDepth)
-//        }
     
     }
     
     // helper function to modify a single mask node
     func modifyMaskNode(index: Int, renderingOrder: Int, image: CGImage) {
-        maskNodes[index].geometry?.materials[0].diffuse.contents = image
-        maskNodes[index].renderingOrder = renderingOrder
+        maskNodes[index].myNode.geometry?.materials[0].diffuse.contents = image
+        maskNodes[index].myNode.renderingOrder = renderingOrder
     }
     
     func depthSort(segMap:[(Int32, Double)]) -> [(Int32, Double)]{
+ 
+        //virtual obejects
         
         var modelTuples : [(Int32, Double)] = []
         for i in registeredModels.keys{
             
-            if let depth = registeredModels[i]?.myDepth.doubleValue {
+            if let depth = registeredModels[i]?.myDepth {
                let a : (Int32, Double) = (i, depth)
                modelTuples.append(a)
             }
         
         }
         var allTuples = segMap + modelTuples
-        allTuples.sort(by: {$0.1 > $1.1})
+        allTuples.sort(by: {$0.1 < $1.1})
         return allTuples
     }
     
     
     @objc func addShipToSceneView(withGestureRecognizer recognizer: UIGestureRecognizer) {
-            let tapLocation = recognizer.location(in: sceneView)
-            let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
-            
-            debugPrint("TAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP")
-
-            guard let hitTestResult = hitTestResults.first else { return }
-            let translation = hitTestResult.worldTransform.translation
-            let x = translation.x
-            let y = translation.y
-            let z = translation.z
-            let shipScene = SCNScene(named: "3D Objects/chair1/chair1.scn")
-    //        shipScene?.rootNode.scale = SCNVector3(0.1,0.1,0.1)
-            guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
+        let tapLocation = recognizer.location(in: sceneView)
+        let hitTestResults = sceneView.hitTest(tapLocation, types: .existingPlaneUsingExtent)
+        
+        guard let hitTestResult = hitTestResults.first else { return }
+        let translation = hitTestResult.worldTransform.translation
+        let x = translation.x
+        let y = translation.y
+        let z = translation.z
+        let shipScene = SCNScene(named: "3D Objects/chair1/chair1.scn")
+        guard let shipNode = shipScene?.rootNode.childNode(withName: "furniture", recursively: false)
                 else {debugPrint("NO MODEL!")
                     return }
-            registeredModels[id] = shipNode
-            id += 1
-    //        guard let shipNode = shipScene?.rootNode else {return}
-    //        shipNode.scale = SCNVector3(0.1, 0.1, 0.1)
-            shipNode.worldPosition = SCNVector3(x,y,z)
-            shipNode.renderingOrder = -1
 
-            sceneView.scene.rootNode.addChildNode(shipNode)
+        shipNode.worldPosition = SCNVector3(x,y,z)
+        shipNode.renderingOrder = -1
+        shipNode.name = "furniture" + String(id)
+        sceneView.scene.rootNode.addChildNode(shipNode)
+        let myShipNode = MYNode.init(node: shipNode, id: id, depth: -1.0)
+        setNodeDepth(node: myShipNode)
+        registeredModels[id] = myShipNode
+        id += 1
 
-            debugPrint("Fuck UUUUUUUUUUUUU")
-        }
+    }
         
     @objc func dragModelInSceneView(panGesture: UIPanGestureRecognizer) {
-        let location = panGesture.location(in: sceneView)
-        switch panGesture.state {
-            case .began:
-                debugPrint("BEGAN")
-                guard let hitNodeResult = sceneView.hitTest(location, options: [SCNHitTestOption.searchMode: 1]).first(where: {$0.node.name == "furniture"}) else{return}
-                draggingNode = hitNodeResult.node
-
-                debugPrint("GOTCHA")
-            
-            case .changed:
-                let location = panGesture.location(in: sceneView)
-                if (location.x > 310 && location.y < 90){
-                    draggingNode?.removeFromParentNode()
-                    return
-                }
-                guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {return}
-                let translation = hitTestResult.worldTransform.translation
-                let x = translation.x
-                let y = translation.y
-                let z = translation.z
-                draggingNode?.position = SCNVector3(x,y,z)
+            let location = panGesture.location(in: sceneView)
+            switch panGesture.state {
+                case .began:
+                    //debugPrint("###############Dragging##############")
+                    guard let hitNodeResult = sceneView.hitTest(location, options: [SCNHitTestOption.searchMode: 1]).first(where: {($0.node.name?.hasPrefix("furniture") ?? false)}) else{return}
+                    draggingNode = hitNodeResult.node
+                    dragId = draggingNode.getID()
+                    // name furniture[id]
+                    //debugPrint(dragId)
+                    //debugPrint(draggingNode)
+                    //debugPrint(registeredModels[dragId]?.myNode)
                 
-//                    draggingNode?.look(at: )
-            case .ended:
-                draggingNode = nil
-            default:
-                return
+                case .changed:
+                    let location = panGesture.location(in: sceneView)
+                    if (location.x > 310 && location.y < 90){
+                        draggingNode.removeFromParentNode()
+                        return
+                    }
+                    guard let hitTestResult = sceneView.hitTest(location,types: .existingPlaneUsingExtent).first else {return}
+                    let translation = hitTestResult.worldTransform.translation
+                    let x = translation.x
+                    let y = translation.y
+                    let z = translation.z
+                    draggingNode.position = SCNVector3(x,y,z)
+                    
+                case .ended:
+                    if let model = registeredModels[dragId]
+                    {
+                        setNodeDepth(node: model)
+                    }
+                    //debugPrint(registeredModels[dragId]?.myDepth)
+                    dragId = nil
+                    draggingNode = nil
+                //debugPrint("###############Dragging Finish##############")
+                default:
+                    return
+            }
         }
-    }
+    
+    func setNodeDepth(node: MYNode) {
+        //debugPrint("---setting depth------")
+        let position = node.myNode.position
+        let virtualCoord = simd_float4(position.x, position.y, position.z, 1)
+        if let inverse = self.cameraInverse
+        {
+            
+            let result = inverse * virtualCoord
+            node.myDepth = Double(-result.z)
+            //debugPrint(node.myDepth)
+            //debugPrint("---setting finish------")
+        }
+        else{
+            debugPrint("---setting fail------")
+            //debugPrint(cameraInverse)
+        }
 
+        
+    }
+    
     func addTapGestureToSceneView() {
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.addShipToSceneView(withGestureRecognizer:)))
         sceneView.addGestureRecognizer(tapGestureRecognizer)
@@ -552,9 +551,9 @@ extension ViewController {
                 depthMap = newArray
                 
 //                let CGimage = MLMultiArray.buildFromSegmentationDepth(segmentationMap: self.segmentationMap!, depthMap: self.depthMap!, threshold: Double(self.depthThreshold) + 0.3)
-                DispatchQueue.main.async {
-                    self.bilbordUpdate()
-                }
+
+                self.bilbordUpdate()
+
                 self.ReleaseBuffer()
             }
         }
@@ -620,6 +619,20 @@ extension ViewController {
     }
 }
 
+extension SCNNode {
+    
+    func getID() -> Int32{
+        var id:Int32  = -1
+        if let name = self.name{
+            let idString = String(name.suffix(2))
+            print("jinglaile")
+            print(idString)
+            id = Int32(idString) ?? -1
+        }
+        return id
+        
+    }
+}
 
 extension float4x4 {
     var translation: float3 {
@@ -642,24 +655,6 @@ extension UIColor {
     }
 }
 
-extension SCNNode {
-    var myUID: NSNumber {
-        get {
-            return self.myUID
-        }
-        set(newValue) {
-            self.myUID = newValue
-        }
-    }
-    
-    var myDepth: NSNumber {
-        get {
-            return self.myDepth
-        }
-        set(newValue) {
-            self.myDepth = newValue
-        }
-    }
-}
+
 
 
